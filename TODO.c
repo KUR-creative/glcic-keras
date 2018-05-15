@@ -1,8 +1,12 @@
-dataset_generation
+(imgedit): get square files for feeding
+    original h != w image
+    -> cutting -> filtering -> square_png_files
+
+dataset_generation: get h5 file dataset for training
     square_png_files -> filtered_square_png_files -> dataset.h5
     h5 file save & load
 
-batch_generation
+batch_generation: get batch from h5 dataset for training
     h5file_name 
     -> h5dataset 
     -> shuffled_h5dataset 
