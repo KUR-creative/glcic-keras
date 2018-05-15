@@ -1,8 +1,13 @@
 dataset_generation
     square_png_files -> filtered_square_png_files -> dataset.h5
+    h5 file save & load
 
 batch_generation
-    h5file_name -> h5dataset -> shuffled_h5dataset => batches
+    h5file_name 
+    -> h5dataset 
+    -> shuffled_h5dataset 
+    -> runtime augmentation
+    => batches
 
 train
     parameter initilization(from cmd)
@@ -38,3 +43,12 @@ must measure running time.(profiling)
 (*) batch_gen | training are must be parallelized.
 (*) try profiler
 (*) try RxPy
+
+(*) use tqdm, parallelization.
+
+
+
+ex: img_128x128_10k.h5
+includes: (로드하면 바로 쓸 수 있게 해둠)
+    RGB, regularized, square images
+    mean_pixel_value of dataset
