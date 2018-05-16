@@ -55,4 +55,4 @@ must measure running time.(profiling)
 ex: img_128x128_10k.h5
 includes: (로드하면 바로 쓸 수 있게 해둠)
     RGB, regularized, square images
-    mean_pixel_value of dataset
+    regularized mean_pixel_value of dataset
