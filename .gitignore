@@ -1,8 +1,10 @@
 *.swp
 *.vim
+*.pyc
 
 *.jpg
 *.jpeg
 *.png
 
 *.h5
+*.npy
