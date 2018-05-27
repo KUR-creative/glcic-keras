@@ -31,32 +31,20 @@ def trainC_in(joint_model, batch, epoch):
     #print('epoch %d: [joint loss: %e | mse loss: %e, gan loss: %e]' % (epoch, joint_loss, mse, gan))
     return joint_loss,mse,gan
 
-def log_and_save(C_loss,D_loss,CD_loss, 
-                 epoch,batch, 
-                 num_epoch,tc,td, save_interval):
-    mse_loss = C_loss
-    bce_d_loss = D_loss
-    joint_loss,mse,gan = CD_loss
-    if epoch < tc:
-        print('epoch %d: [C mse loss: %e]' % (epoch, mse_loss))
-    else:
-        print('epoch %d: [C mse loss: %e] [D bce loss: %e]' 
-                % (epoch, mse_loss, bce_d_loss))
-        if epoch >= tc + td:
-            print('epoch %d: [joint loss: %e | mse loss: %e, gan loss: %e]' 
-                    % (epoch, joint_loss, mse, gan))
+def save(Cmodel,Dmodel,batch, period,epoch,num_epoch, result_dir):
+    origins, complnet_inputs, holed_origins, masks, ld_crop_yxhws = batch
+    if epoch % period == 0 or epoch == num_epoch - 1:
+        completed = Cmodel.predict([holed_origins, complnet_inputs, masks])
 
-            if epoch % save_interval == 0 or epoch == num_epoch - 1:
-                result_dir = 'output'
-                completed = Cmodel.predict([masked_origins, 
-                                            complnet_inputs, 
-                                            masks])
-                np.save(os.path.join(result_dir,'I_O_GT__%d.npy' % epoch),
-                        np.array([complnet_inputs,completed,origins]))
-                Cmodel.save_weights(os.path.join(result_dir, 
-                                                 "complnet_%d.h5" % epoch))
-                Dmodel.save_weights(os.path.join(result_dir, 
-                                                 "discrimnet_%d.h5" % epoch))
+        np.save(os.path.join(result_dir,'I_O_GT__%d.npy' % epoch),
+                np.array([complnet_inputs,completed,origins]))
+
+        Cmodel.save_weights(
+            os.path.join(result_dir, "complnet_%d.h5" % epoch)
+        )
+        Dmodel.save_weights(
+            os.path.join(result_dir, "discrimnet_%d.h5" % epoch)
+        )
 
 Cmodel, Dmodel, CDmodel = init_models()
 
@@ -99,6 +87,7 @@ for epoch in range(num_epoch):
         if epoch >= tc + td:
             print('epoch %d: [joint loss: %e | mse loss: %e, gan loss: %e]' 
                     % (epoch, joint_loss, mse, gan))
+    save(Cmodel,Dmodel,batch, save_interval,epoch,num_epoch, 'output')
     #origins, complnet_inputs, masked_origins, masks, ld_crop_yxhws = batch
     #log_and_save(mse_loss, bce_d_loss, (joint_loss,mse,gan),
                  #epoch, batch, num_epoch,tc,td, save_interval)
@@ -129,13 +118,4 @@ time_str = timer.elapsed_time()
 data_file.close()
 #import mailing
 #mailing.send_mail_to_kur(time_str)
-'''
-if __name__ == "__main__":
-    timer = ElapsedTimer()
-    main()
-    timer.elapsed_time()
-
-    #plot_model(Cmodel, to_file='mse_model.png', show_shapes=True)
-    #model.summary()
-'''
 
