@@ -19,6 +19,7 @@ def write_result_img(npy_path,img_path,batch_size,size):
 #TODO: create interactive demo!
 
 '''
+# chunk_generator is for hdf5 file generation!!!!
 def chunk_generator(np_array,chk_size):
     length = len(np_array)
     for beg_idx in range(0,length, chk_size):
