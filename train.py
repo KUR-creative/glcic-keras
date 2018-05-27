@@ -3,7 +3,8 @@ from keras.layers import Input, Add, Multiply, merge
 from keras.models import Model
 from keras.engine.topology import Container
 from keras.optimizers import Adadelta, Adam
-from data_utils import gen_batch,ElapsedTimer
+from data_generator import gen_batch
+from utils import ElapsedTimer
 from keras.utils import plot_model
 
 import tensorflow as tf
@@ -40,9 +41,6 @@ def cropping(imgs_yxhws):
 complnet_inp = Input(shape=IMG_SHAPE, name='complnet_inp')
 masked_origins_inp = Input(shape=IMG_SHAPE, name='masked_origins_inp')
 masks_inp = Input(shape=MASK_SHAPE, name='masks_inp')
-#complnet_inp = Input(shape=VAR_IMG_SHAPE, name='complnet_inp')
-#masked_origins_inp = Input(shape=VAR_IMG_SHAPE, name='masked_origins_inp')
-#masks_inp = Input(shape=VAR_MASK_SHAPE, name='masks_inp')
 
 complnet_out = completion_net(VAR_IMG_SHAPE)(complnet_inp)
 merged_out = Add()([masked_origins_inp, 
@@ -51,20 +49,6 @@ merged_out = Add()([masked_origins_inp,
 compl_model = Model([masked_origins_inp, 
                      complnet_inp, 
                      masks_inp], merged_out)
-'''
-# complnet must be defined separaely. it is used for both train/test time.
-complnet = completion_net(VAR_IMG_SHAPE)
-
-var_complnet_out = complnet(var_complnet_inp)
-merged_out = Add()([var_masked_origins_inp, 
-                     Multiply()([complnet_out, 
-                                 var_masks_inp])])
-test_compl_model = Model([var_origins_inp,
-                          var_complnet_inp,
-                          var_masks_inp],var_merged_out)
-# and test model would be saved!
-# retrain model with ./data128.h5 <- small dataset.
-'''
 compl_model.compile(loss='mse', optimizer=Adadelta())
 
 #def discrimination_model():
