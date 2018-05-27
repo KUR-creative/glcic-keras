@@ -2,6 +2,15 @@ from keras.layers import Flatten, Activation, Conv2D, Conv2DTranspose, Dense, In
 from keras.layers.normalization import BatchNormalization
 from keras.layers.merge import concatenate
 from keras.models import Sequential, Model
+import tensorflow as tf
+
+def cropping(imgs_yxhws):
+    def crop(img_yxhw):
+        img,yxhw = img_yxhw
+        y = yxhw[0]; x = yxhw[1]
+        h = yxhw[2]; w = yxhw[3]
+        return tf.image.crop_to_bounding_box(img, y,x, h,w)
+    return tf.map_fn(crop, imgs_yxhws, dtype=tf.float32, infer_shape=False)
  
 def add_layer_BN_relu(model,layer_fn,*args,**kargs):
     model.add(layer_fn(*args,**kargs))

@@ -1,4 +1,5 @@
-from layers import completion_net, discrimination_net
+from layers import completion_net, discrimination_net, cropping
+
 from keras.layers import Input, Add, Multiply, merge
 from keras.models import Model
 from keras.engine.topology import Container
@@ -7,8 +8,6 @@ from data_generator import gen_batch
 from utils import ElapsedTimer
 from keras.utils import plot_model
 
-import tensorflow as tf
-import matplotlib.pyplot as plt
 import numpy as np
 import os, h5py
 np.set_printoptions(threshold=np.nan, linewidth=np.nan)
@@ -29,24 +28,16 @@ MASK_SHAPE = (IMG_SIZE,IMG_SIZE,1)
 VAR_IMG_SHAPE = (None,None,3)
 VAR_MASK_SHAPE = (None,None,1)
 
-def cropping(imgs_yxhws):
-    def crop(img_yxhw):
-        img,yxhw = img_yxhw
-        y = yxhw[0]; x = yxhw[1]
-        h = yxhw[2]; w = yxhw[3]
-        return tf.image.crop_to_bounding_box(img, y,x, h,w)
-    return tf.map_fn(crop, imgs_yxhws, dtype=tf.float32, infer_shape=False)
-
 #def completion_model():
 complnet_inp = Input(shape=IMG_SHAPE, name='complnet_inp')
-masked_origins_inp = Input(shape=IMG_SHAPE, name='masked_origins_inp')
+holed_origins_inp = Input(shape=IMG_SHAPE, name='holed_origins_inp')
 masks_inp = Input(shape=MASK_SHAPE, name='masks_inp')
 
 complnet_out = completion_net(VAR_IMG_SHAPE)(complnet_inp)
-merged_out = Add()([masked_origins_inp, 
+merged_out = Add()([holed_origins_inp, 
                      Multiply()([complnet_out, 
                                  masks_inp])])
-compl_model = Model([masked_origins_inp, 
+compl_model = Model([holed_origins_inp, 
                      complnet_inp, 
                      masks_inp], merged_out)
 compl_model.compile(loss='mse', optimizer=Adadelta())
@@ -70,7 +61,7 @@ plot_model(discrim_model, to_file='D_model.png', show_shapes=True)
 d_container = Container([origins_inp,crop_yxhw_inp], discrim_out,
                         name='D_container')
 d_container.trainable = False
-joint_model = Model([masked_origins_inp,complnet_inp,masks_inp,
+joint_model = Model([holed_origins_inp,complnet_inp,masks_inp,
                      crop_yxhw_inp],
                     [merged_out,
                      d_container([merged_out,crop_yxhw_inp])])
@@ -97,7 +88,7 @@ save_interval = 2
 #num_epoch = 240
 #tc = int(num_epoch * 0.18)
 #td = int(num_epoch * 0.02)
-num_epoch = 13 # 
+num_epoch = 6 # 
 tc = 2 # 2
 td = 1
 print('num_epoch=',num_epoch,'tc=',tc,'td=',td)
