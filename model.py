@@ -9,7 +9,8 @@ from keras.utils import plot_model
 import numpy as np
 
 #BATCH_SIZE = 16#16 64 occur OOM 
-BATCH_SIZE = 32#16 64 occur OOM 
+#BATCH_SIZE = 32#16 64 occur OOM 
+BATCH_SIZE = 128
 IMG_SIZE = 128
 LD_CROP_SIZE = IMG_SIZE // 2  # LD means Local Discrimnator
 #MAX_LEN = IMG_SIZE // 2

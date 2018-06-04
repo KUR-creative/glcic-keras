@@ -1,3 +1,6 @@
+*
+
+mailing.py
 *.swp
 *.swo
 *.vim
@@ -10,5 +13,4 @@
 *.h5
 *.npy
 
-tags
 *.taghl
