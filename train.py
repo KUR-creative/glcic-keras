@@ -58,8 +58,8 @@ print('num_epoch=',num_epoch,'tc=',tc,'td=',td)
 #data_file = h5py.File('./data/mini_data.h5','r') 
 data_file = h5py.File('./data/data128.h5','r') 
 #-------------------------------------------------------------------------------
-data_arr = data_file['images']
-mean_pixel_value = data_file['mean_pixel_value'][()] / 255
+data_arr = data_file['images'] # already preprocessed, float32.
+mean_pixel_value = data_file['mean_pixel_value'][()] # value is float
 
 timer = ElapsedTimer('Total Training')
 #-------------------------------------------------------------------------------

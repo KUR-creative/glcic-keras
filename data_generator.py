@@ -108,7 +108,7 @@ def gen_batch(data_arr, batch_size, img_size, ld_crop_size,
             idx = idxes[i:i+batch_size][n]
             unpreprocessed_imgs[n] = data_arr[idx]
 
-        origins = unpreprocessed_imgs.astype(np.float32) / 255
+        origins = unpreprocessed_imgs#.astype(np.float32) / 255 # alreadt preprocessed.
 
         maskeds, mask_yxhws = get_random_maskeds(batch_size, 
                                                  img_size, 
