@@ -45,14 +45,14 @@ def save(Cmodel,Dmodel,batch, period,epoch,num_epoch, result_dir):
 
 Cmodel, Dmodel, CDmodel = init_models()
 
-#save_interval = 20
-#num_epoch = 240
-#tc = int(num_epoch * 0.18)
-#td = int(num_epoch * 0.02)
-save_interval = 2
-num_epoch = 13 # 
-tc = 2 # 2
-td = 1
+save_interval = 50
+num_epoch = 1100
+tc = int(num_epoch * 0.18)
+td = int(num_epoch * 0.02)
+#save_interval = 2
+#num_epoch = 13 # 
+#tc = 2 # 2
+#td = 1
 print('num_epoch=',num_epoch,'tc=',tc,'td=',td)
 
 data_file = h5py.File('./data/test.h5','r') 
