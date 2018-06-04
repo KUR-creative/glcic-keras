@@ -55,7 +55,7 @@ tc = 2 # 2
 td = 1
 print('num_epoch=',num_epoch,'tc=',tc,'td=',td)
 
-data_file = h5py.File('./data/mini_gray2_128_3crop.h5','r') 
+data_file = h5py.File('./data/test.h5','r') 
 #-------------------------------------------------------------------------------
 data_arr = data_file['images'] # already preprocessed, float32.
 mean_pixel_value = data_file['mean_pixel_value'][()] # value is float

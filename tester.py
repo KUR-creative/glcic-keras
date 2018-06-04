@@ -2,10 +2,10 @@
 import numpy as np
 import h5py, cv2, os
 
-def write_result_img(npy_path,img_path,batch_size,size):
+def write_result_img(npy_path,img_path,batch_size,size,num_channels=3):
     result = np.load(npy_path) 
     # size = image size
-    result_img = np.empty((batch_size*size, 3*size, 3))
+    result_img = np.empty((batch_size*size, 3*size, num_channels))
     for i in range(batch_size): 
         result_img[i*size:(i+1)*size, 0*size:1*size] = result[0,i]
         result_img[i*size:(i+1)*size, 1*size:2*size] = result[1,i]
@@ -109,11 +109,11 @@ if __name__ == "__main__":
             #cv2.imshow('ld_crop2',complnet_inputs[batch_size-1][lY:lY+lH,lX:lX+lW]); cv2.waitKey(0)
 
     write_result_img('./output/I_O_GT__180.npy',
-                     './output/result.png',bat_size,img_size)
+                     './output/result.png',bat_size,img_size,1)
     write_result_img('./output/I_O_GT__160.npy',
-                     './output/result12.png',bat_size,img_size)
+                     './output/result12.png',bat_size,img_size,1)
     write_result_img('./output/I_O_GT__199.npy',
-                     './output/result199.png',bat_size,img_size)
+                     './output/result199.png',bat_size,img_size,1)
     '''
     bat_size = 32
     img_size = 128

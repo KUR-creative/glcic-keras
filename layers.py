@@ -25,9 +25,10 @@ def set_layer_BN_relu(input,layer_fn,*args,**kargs):
 
 def completion_net(input_shape=(256, 256, 3),name='complnet'):
     model = Sequential(name=name)
+    '''
     # default strides = (1,1)
     #--------------------------------
-    add_layer_BN_relu(model, Conv2D,  64, (5,5), padding='same', input_shape=(None,None,3))
+    add_layer_BN_relu(model, Conv2D,  64, (5,5), padding='same', input_shape=input_shape)
     #----------------
     add_layer_BN_relu(model, Conv2D, 128, (3,3), strides=(2,2), padding='same')
     add_layer_BN_relu(model, Conv2D, 128, (3,3), padding='same')
@@ -52,10 +53,39 @@ def completion_net(input_shape=(256, 256, 3),name='complnet'):
 
     model.add(Conv2D( 3, (3,3), padding='same')) # no BN!
     model.add(Activation('sigmoid'))
+    '''
+    # default strides = (1,1)
+    #--------------------------------
+    add_layer_BN_relu(model, Conv2D,  32, (5,5), padding='same', input_shape=input_shape)
+    #----------------
+    add_layer_BN_relu(model, Conv2D,  64, (3,3), strides=(2,2), padding='same')
+    add_layer_BN_relu(model, Conv2D,  64, (3,3), padding='same')
+    #--------
+    add_layer_BN_relu(model, Conv2D, 128, (3,3), strides=(2,2), padding='same')
+    add_layer_BN_relu(model, Conv2D, 128, (3,3), padding='same')
+    add_layer_BN_relu(model, Conv2D, 128, (3,3), padding='same')
+    # dilation
+    add_layer_BN_relu(model, Conv2D, 128, (3,3), dilation_rate=( 2, 2), padding='same')
+    add_layer_BN_relu(model, Conv2D, 128, (3,3), dilation_rate=( 4, 4), padding='same')
+    add_layer_BN_relu(model, Conv2D, 128, (3,3), dilation_rate=( 8, 8), padding='same')
+    add_layer_BN_relu(model, Conv2D, 128, (3,3), dilation_rate=(16,16), padding='same')
+    #--------
+    add_layer_BN_relu(model, Conv2D, 128, (3,3), padding='same')
+    add_layer_BN_relu(model, Conv2D, 128, (3,3), padding='same')
+    #----------------
+    add_layer_BN_relu(model, Conv2DTranspose, 128, (4,4), strides=(2,2), padding='same')
+    add_layer_BN_relu(model, Conv2D,  64, (3,3), padding='same')
+    #--------------------------------
+    add_layer_BN_relu(model, Conv2DTranspose, 64, (4,4), strides=(2,2), padding='same')
+    add_layer_BN_relu(model, Conv2D,  32, (3,3), padding='same')
+
+    model.add(Conv2D( 1, (3,3), padding='same')) # no BN!
+    model.add(Activation('sigmoid'))
     return model
 
 def discrimination_net(global_shape=(128, 128, 3), local_shape=(64, 64, 3),name='discrimnet'):
     g_img = Input(shape=global_shape)
+    '''
     x_g = set_layer_BN_relu(g_img, Conv2D,  64, (5,5), strides=(2,2), padding='same')
     x_g = set_layer_BN_relu(  x_g, Conv2D, 128, (5,5), strides=(2,2), padding='same')
     x_g = set_layer_BN_relu(  x_g, Conv2D, 256, (5,5), strides=(2,2), padding='same')
@@ -67,6 +97,21 @@ def discrimination_net(global_shape=(128, 128, 3), local_shape=(64, 64, 3),name=
     x_l = set_layer_BN_relu(  x_l, Conv2D, 128, (5,5), strides=(2,2), padding='same')
     x_l = Flatten()(x_l)
     x_l = Dense(512)(x_l) 
+
+    x = concatenate([x_g, x_l]) # no activation. or..?
+    x = Dense(1, activation='sigmoid')(x)
+    '''
+    x_g = set_layer_BN_relu(g_img, Conv2D,  32, (5,5), strides=(2,2), padding='same')
+    x_g = set_layer_BN_relu(  x_g, Conv2D,  64, (5,5), strides=(2,2), padding='same')
+    x_g = set_layer_BN_relu(  x_g, Conv2D, 128, (5,5), strides=(2,2), padding='same')
+    x_g = Flatten()(x_g)
+    x_g = Dense(256)(x_g) 
+
+    l_img = Input(shape=local_shape)
+    x_l = set_layer_BN_relu(l_img, Conv2D,  32, (5,5), strides=(2,2), padding='same')
+    x_l = set_layer_BN_relu(  x_l, Conv2D,  64, (5,5), strides=(2,2), padding='same')
+    x_l = Flatten()(x_l)
+    x_l = Dense(128)(x_l) 
 
     x = concatenate([x_g, x_l]) # no activation. or..?
     x = Dense(1, activation='sigmoid')(x)

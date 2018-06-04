@@ -1,3 +1,4 @@
+from model import init_models, IMG_SHAPE
 import numpy as np
 import h5py, cv2, os
 
@@ -98,17 +99,21 @@ def gen_batch(data_arr, batch_size, img_size, ld_crop_size,
     idxes = np.arange(arr_len,dtype=np.uint32)
     np.random.shuffle(idxes) #shuffle needed.
 
+    #print(data_arr.shape)
+    #cv2.imshow('org',data_arr[1]); cv2.waitKey(0)
     for i in range(0,arr_len, batch_size):
         if i + batch_size > arr_len: #TODO: => or > ?
             break
-        unpreprocessed_imgs = np.empty((batch_size,
-                                        img_size,img_size,3),
-                                       dtype=np.uint8)
+        origins = np.empty((batch_size,) + IMG_SHAPE,
+                                       dtype=data_arr.dtype)
         for n in range(batch_size):
             idx = idxes[i:i+batch_size][n]
-            unpreprocessed_imgs[n] = data_arr[idx]
+            origins[n] = data_arr[idx]
+            #print(type(idx))
+            #cv2.imshow('org',data_arr[idx]); cv2.waitKey(0)
+            #cv2.imshow('org',origins[n]); cv2.waitKey(0)
 
-        origins = unpreprocessed_imgs#.astype(np.float32) / 255 # alreadt preprocessed.
+        #cv2.imshow('wtf',origins[1]); cv2.waitKey(0)
 
         maskeds, mask_yxhws = get_random_maskeds(batch_size, 
                                                  img_size, 
@@ -135,4 +140,14 @@ class Test(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+from model import init_models, BATCH_SIZE, IMG_SIZE, LD_CROP_SIZE, MAX_LEN, MIN_LEN
+data_file = h5py.File('./data/test.h5','r') 
+data_arr = data_file['images'] # already preprocessed, float32.
+mean_pixel_value = data_file['mean_pixel_value'][()] # value is float
+for batch in gen_batch(data_arr, BATCH_SIZE, IMG_SIZE, LD_CROP_SIZE,
+                       MIN_LEN, MAX_LEN, mean_pixel_value):
+    origins, complnet_inputs, holed_origins, masks, ld_crop_yxhws = batch
+    cv2.imshow('origin',origins[1]); cv2.waitKey(0)
+data_file.close()
 '''
