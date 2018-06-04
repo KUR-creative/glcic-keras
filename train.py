@@ -45,18 +45,17 @@ def save(Cmodel,Dmodel,batch, period,epoch,num_epoch, result_dir):
 
 Cmodel, Dmodel, CDmodel = init_models()
 
-save_interval = 20
-num_epoch = 240
-tc = int(num_epoch * 0.18)
-td = int(num_epoch * 0.02)
-#save_interval = 2
-#num_epoch = 13 # 
-#tc = 2 # 2
-#td = 1
+#save_interval = 20
+#num_epoch = 240
+#tc = int(num_epoch * 0.18)
+#td = int(num_epoch * 0.02)
+save_interval = 2
+num_epoch = 13 # 
+tc = 2 # 2
+td = 1
 print('num_epoch=',num_epoch,'tc=',tc,'td=',td)
 
-#data_file = h5py.File('./data/mini_data.h5','r') 
-data_file = h5py.File('./data/data128.h5','r') 
+data_file = h5py.File('./data/mini_gray2_128_3crop.h5','r') 
 #-------------------------------------------------------------------------------
 data_arr = data_file['images'] # already preprocessed, float32.
 mean_pixel_value = data_file['mean_pixel_value'][()] # value is float
@@ -89,6 +88,6 @@ for epoch in range(num_epoch):
 time_str = timer.elapsed_time()
 data_file.close()
 
-import mailing
-mailing.send_mail_to_kur(time_str)
+#import mailing
+#mailing.send_mail_to_kur(time_str)
 
