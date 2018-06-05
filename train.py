@@ -51,7 +51,7 @@ tc = int(num_epoch * 0.18)
 td = int(num_epoch * 0.02)
 '''
 save_interval = 2
-num_epoch = 1 # 
+num_epoch = 3 # 
 tc = 1 # 2
 td = 1
 '''
@@ -67,7 +67,7 @@ mean_pixel_value = data_file['mean_pixel_value'][()] # value is float
 timer = ElapsedTimer('Total Training')
 #-------------------------------------------------------------------------------
 for epoch in range(num_epoch):
-    epoch_timer = ElapsedTimer('1 epoch training time')
+    #epoch_timer = ElapsedTimer('1 epoch training time')
     #--------------------------------------------------------------------------
     for batch in gen_batch(data_arr, BATCH_SIZE, IMG_SIZE, LD_CROP_SIZE,
                            MIN_LEN, MAX_LEN, mean_pixel_value):
@@ -78,15 +78,16 @@ for epoch in range(num_epoch):
             if epoch >= tc + td:
                 joint_loss,mse,gan = trainC_in(CDmodel, batch, epoch)
     #--------------------------------------------------------------------------
-    epoch_timer.elapsed_time()
+    #epoch_timer.elapsed_time()
 
     if epoch < tc:
         print('epoch %d: [C mse loss: %e]' % (epoch, mse_loss))
     else:
-        print('epoch %d: [D bce loss: %e]' % (epoch, bce_d_loss))
         if epoch >= tc + td:
             print('epoch %d: [joint loss: %e | mse loss: %e, gan loss: %e]' 
                     % (epoch, joint_loss, mse, gan))
+        else:
+            print('epoch %d: [D bce loss: %e]' % (epoch, bce_d_loss))
     save(Cmodel,Dmodel,batch, save_interval,epoch,num_epoch, 'output')
 #-------------------------------------------------------------------------------
 time_str = timer.elapsed_time()
