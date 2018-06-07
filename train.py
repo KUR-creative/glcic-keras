@@ -2,6 +2,7 @@ from model import init_models, BATCH_SIZE, IMG_SIZE, LD_CROP_SIZE, MAX_LEN, MIN_
 from data_generator import gen_batch
 from utils import ElapsedTimer
 
+from tqdm import tqdm
 import numpy as np
 import os, h5py
 
@@ -66,7 +67,7 @@ mean_pixel_value = data_file['mean_pixel_value'][()] # value is float
 
 timer = ElapsedTimer('Total Training')
 #-------------------------------------------------------------------------------
-for epoch in range(num_epoch):
+for epoch in tqdm(range(num_epoch)):
     #epoch_timer = ElapsedTimer('1 epoch training time')
     #--------------------------------------------------------------------------
     for batch in gen_batch(data_arr, BATCH_SIZE, IMG_SIZE, LD_CROP_SIZE,

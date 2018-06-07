@@ -115,14 +115,15 @@ if __name__ == "__main__":
     write_result_img('./output/I_O_GT__199.npy',
                      './output/result199.png',bat_size,img_size,1)
     '''
-    bat_size = 32
+    bat_size = 128
     img_size = 128
     #for i in range(40,180+20,20):
-    for i in range(4,12+1,2):
+    for i in range(0,1100,50):
     #for i in range(60,220+1,20):
         write_result_img('./output/I_O_GT__%d.npy' % i,
                          './output/result%d.png' % i,
                          bat_size,img_size)
         print(i)
-    write_result_img('./output/I_O_GT__239.npy',
-                     './output/result239.png',bat_size,img_size)
+    write_result_img('./output/I_O_GT__%d.npy' % 1099,
+                     './output/result%d.png' % 1099,
+                     bat_size,img_size)
