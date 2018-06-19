@@ -2,6 +2,7 @@ from model import init_models, BATCH_SIZE, IMG_SIZE, LD_CROP_SIZE, HOLE_MAX_LEN,
 from data_generator import gen_batch
 from utils import ElapsedTimer
 
+from tqdm import tqdm
 import numpy as np
 import os, h5py
 
@@ -44,7 +45,6 @@ def save(Cmodel,Dmodel,batch, period,epoch,num_epoch, result_dir):
         )
 
 Cmodel, Dmodel, CDmodel = init_models()
-
 
 def train(DATASET_NAME, NUM_EPOCH, Tc, Td, SAVE_INTERVAL, MAILING_ENABLED):
     #print('num_epoch=',NUM_EPOCH,'Tc=',Tc,'Td=',Td)
