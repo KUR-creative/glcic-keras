@@ -2,8 +2,10 @@
 import numpy as np
 import h5py, cv2, os
 
-def write_result_img(npy_path,img_path,batch_size,size,num_channels=3):
+def write_result_img(npy_path,img_path,
+                     batch_size,size,num_channels=3):
     result = np.load(npy_path) 
+    print(result.shape)
     # size = image size
     result_img = np.empty((batch_size*size, 3*size, num_channels))
     for i in range(batch_size): 
@@ -85,8 +87,8 @@ class Test_chunk_generator(unittest.TestCase):
 if __name__ == "__main__":
     '''
     #unittest.main()
-    batch_size = 16
-    img_size = 128
+    batch_size = 32
+    img_size = 192
     maxl = img_size // 2
     minl = img_size // 4
     with h5py.File('./data128_half.h5','r') as data_file:
@@ -116,13 +118,15 @@ if __name__ == "__main__":
                      './output/result199.png',bat_size,img_size,1)
     '''
     bat_size = 32
-    img_size = 128
+    img_size = 192
     #for i in range(40,180+20,20):
-    for i in range(4,12+1,2):
+    for i in range(0,10+1,2):
     #for i in range(60,220+1,20):
         write_result_img('./output/I_O_GT__%d.npy' % i,
                          './output/result%d.png' % i,
-                         bat_size,img_size)
+                         bat_size,img_size,1)
         print(i)
+    '''
     write_result_img('./output/I_O_GT__239.npy',
                      './output/result239.png',bat_size,img_size)
+    '''
