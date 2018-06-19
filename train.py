@@ -45,49 +45,48 @@ def save(Cmodel,Dmodel,batch, period,epoch,num_epoch, result_dir):
 
 Cmodel, Dmodel, CDmodel = init_models()
 
-save_interval = 50
-num_epoch = 1100
-tc = int(num_epoch * 0.18)
-td = int(num_epoch * 0.02)
-#save_interval = 2
-#num_epoch = 13 # 
-#tc = 2 # 2
-#td = 1
-print('num_epoch=',num_epoch,'tc=',tc,'td=',td)
+SAVE_INTERVAL = 2#50
+NUM_EPOCH = 5#1100
+Tc = 1#int(NUM_EPOCH * 0.18)
+Td = 1#int(NUM_EPOCH * 0.02)
+DATASET_NAME = './data/test.h5'
+MAILING_ENABLED = False
+print('num_epoch=',NUM_EPOCH,'Tc=',Tc,'Td=',Td)
+print('mailing enabled' if MAILING_ENABLED else 'mailing_disabled')
 
-data_file = h5py.File('./data/test.h5','r') 
+data_file = h5py.File(DATASET_NAME,'r') 
 #-------------------------------------------------------------------------------
 data_arr = data_file['images'] # already preprocessed, float32.
 mean_pixel_value = data_file['mean_pixel_value'][()] # value is float
 
 timer = ElapsedTimer('Total Training')
 #-------------------------------------------------------------------------------
-for epoch in range(num_epoch):
+for epoch in range(NUM_EPOCH):
     epoch_timer = ElapsedTimer('1 epoch training time')
     #--------------------------------------------------------------------------
     for batch in gen_batch(data_arr, BATCH_SIZE, IMG_SIZE, LD_CROP_SIZE,
                            MIN_LEN, MAX_LEN, mean_pixel_value):
-        if epoch < tc:
+        if epoch < Tc:
             mse_loss = trainC(Cmodel, batch, epoch)
         else:
             bce_d_loss = trainD(Cmodel, Dmodel, batch, epoch)
-            if epoch >= tc + td:
+            if epoch >= Tc + Td:
                 joint_loss,mse,gan = trainC_in(CDmodel, batch, epoch)
     #--------------------------------------------------------------------------
     epoch_timer.elapsed_time()
 
-    if epoch < tc:
+    if epoch < Tc:
         print('epoch %d: [C mse loss: %e]' % (epoch, mse_loss))
     else:
         print('epoch %d: [D bce loss: %e]' % (epoch, bce_d_loss))
-        if epoch >= tc + td:
+        if epoch >= Tc + Td:
             print('epoch %d: [joint loss: %e | mse loss: %e, gan loss: %e]' 
                     % (epoch, joint_loss, mse, gan))
-    save(Cmodel,Dmodel,batch, save_interval,epoch,num_epoch, 'output')
+    save(Cmodel,Dmodel,batch, SAVE_INTERVAL,epoch,NUM_EPOCH, 'output')
 #-------------------------------------------------------------------------------
 time_str = timer.elapsed_time()
 data_file.close()
 
-#import mailing
-#mailing.send_mail_to_kur(time_str)
-
+if MAILING_ENABLED:
+    import mailing
+    mailing.send_mail_to_kur(time_str)
