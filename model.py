@@ -59,7 +59,7 @@ def init_models():
     discrim_model = Model([origins_inp,crop_yxhw_inp], 
                           discrim_out)
     discrim_model.compile(loss='binary_crossentropy', 
-                          optimizer=Adadelta(lr=Dmodel_lr)) # good? lol
+                          optimizer=Adadelta(lr=D_MODEL_LR)) # good? lol
                           #optimizer=Adam(lr=0.000001))
     #discrim_model.summary()
     #plot_model(discrim_model, to_file='D_model.png', show_shapes=True)
@@ -73,7 +73,7 @@ def init_models():
                         [merged_out, d_container([merged_out,crop_yxhw_inp])])
 
     joint_model.compile(loss=['mse', 'binary_crossentropy'],
-                        loss_weights=[1.0, alpha], optimizer=Adadelta())
+                        loss_weights=[1.0, ALPHA], optimizer=Adadelta())
 
     #joint_model.summary()
     #plot_model(joint_model, to_file='joint_model.png', show_shapes=True)

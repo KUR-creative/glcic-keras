@@ -1,4 +1,4 @@
-from model import init_models, BATCH_SIZE, IMG_SIZE, LD_CROP_SIZE, MAX_LEN, MIN_LEN
+from model import init_models, BATCH_SIZE, IMG_SIZE, LD_CROP_SIZE, HOLE_MAX_LEN, HOLE_MIN_LEN
 from data_generator import gen_batch
 from utils import ElapsedTimer
 
