@@ -45,49 +45,54 @@ def save(Cmodel,Dmodel,batch, period,epoch,num_epoch, result_dir):
 
 Cmodel, Dmodel, CDmodel = init_models()
 
-SAVE_INTERVAL = 2#50
-NUM_EPOCH = 5#1100
-Tc = 1#int(NUM_EPOCH * 0.18)
-Td = 1#int(NUM_EPOCH * 0.02)
-DATASET_NAME = './data/test.h5'
-MAILING_ENABLED = False
-print('num_epoch=',NUM_EPOCH,'Tc=',Tc,'Td=',Td)
-print('mailing enabled' if MAILING_ENABLED else 'mailing_disabled')
 
-data_file = h5py.File(DATASET_NAME,'r') 
-#-------------------------------------------------------------------------------
-data_arr = data_file['images'] # already preprocessed, float32.
-mean_pixel_value = data_file['mean_pixel_value'][()] # value is float
+def train(DATASET_NAME, NUM_EPOCH, Tc, Td, SAVE_INTERVAL, MAILING_ENABLED):
+    #print('num_epoch=',NUM_EPOCH,'Tc=',Tc,'Td=',Td)
+    #print('mailing enabled' if MAILING_ENABLED else 'mailing_disabled')
 
-timer = ElapsedTimer('Total Training')
-#-------------------------------------------------------------------------------
-for epoch in range(NUM_EPOCH):
-    #epoch_timer = ElapsedTimer('1 epoch training time')
-    #--------------------------------------------------------------------------
-    for batch in gen_batch(data_arr, BATCH_SIZE, IMG_SIZE, LD_CROP_SIZE,
-                           MIN_LEN, MAX_LEN, mean_pixel_value):
+    data_file = h5py.File(DATASET_NAME,'r') 
+    #-------------------------------------------------------------------------------
+    data_arr = data_file['images'] # already preprocessed, float32.
+    mean_pixel_value = data_file['mean_pixel_value'][()] # value is float
+
+    timer = ElapsedTimer('Total Training')
+    #-------------------------------------------------------------------------------
+    for epoch in range(NUM_EPOCH):
+        #epoch_timer = ElapsedTimer('1 epoch training time')
+        #--------------------------------------------------------------------------
+        for batch in gen_batch(data_arr, BATCH_SIZE, IMG_SIZE, LD_CROP_SIZE,
+                               HOLE_MIN_LEN, HOLE_MAX_LEN, mean_pixel_value):
+            if epoch < Tc:
+                mse_loss = trainC(Cmodel, batch, epoch)
+            else:
+                bce_d_loss = trainD(Cmodel, Dmodel, batch, epoch)
+                if epoch >= Tc + Td:
+                    joint_loss,mse,gan = trainC_in(CDmodel, batch, epoch)
+        #--------------------------------------------------------------------------
+        #epoch_timer.elapsed_time()
+
         if epoch < Tc:
-            mse_loss = trainC(Cmodel, batch, epoch)
+            print('epoch %d: [C mse loss: %e]' % (epoch, mse_loss))
         else:
-            bce_d_loss = trainD(Cmodel, Dmodel, batch, epoch)
             if epoch >= Tc + Td:
-                joint_loss,mse,gan = trainC_in(CDmodel, batch, epoch)
-    #--------------------------------------------------------------------------
-    #epoch_timer.elapsed_time()
+                print('epoch %d: [joint loss: %e | mse loss: %e, gan loss: %e]' 
+                        % (epoch, joint_loss, mse, gan))
+            else:
+                print('epoch %d: [D bce loss: %e]' % (epoch, bce_d_loss))
+        save(Cmodel,Dmodel,batch, SAVE_INTERVAL,epoch,NUM_EPOCH, 'output')
+    #-------------------------------------------------------------------------------
+    time_str = timer.elapsed_time()
+    data_file.close()
 
-    if epoch < Tc:
-        print('epoch %d: [C mse loss: %e]' % (epoch, mse_loss))
-    else:
-        if epoch >= Tc + Td:
-            print('epoch %d: [joint loss: %e | mse loss: %e, gan loss: %e]' 
-                    % (epoch, joint_loss, mse, gan))
-        else:
-            print('epoch %d: [D bce loss: %e]' % (epoch, bce_d_loss))
-    save(Cmodel,Dmodel,batch, SAVE_INTERVAL,epoch,NUM_EPOCH, 'output')
-#-------------------------------------------------------------------------------
-time_str = timer.elapsed_time()
-data_file.close()
+    if MAILING_ENABLED:
+        import mailing
+        mailing.send_mail_to_kur(time_str)
 
-if MAILING_ENABLED:
-    import mailing
-    mailing.send_mail_to_kur(time_str)
+if __name__ == "__main__":
+    DATASET_NAME = './data/test.h5'
+    NUM_EPOCH = 5#1100
+    Tc = 1#int(NUM_EPOCH * 0.18)
+    Td = 1#int(NUM_EPOCH * 0.02)
+    SAVE_INTERVAL = 2#50
+    MAILING_ENABLED = False
+    train(DATASET_NAME, NUM_EPOCH, Tc, Td, SAVE_INTERVAL, MAILING_ENABLED)

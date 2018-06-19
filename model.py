@@ -8,31 +8,52 @@ from keras.utils import plot_model
 
 import numpy as np
 
-BATCH_SIZE = 32#16 64 occur OOM 
-IMG_SIZE = 128
+BATCH_SIZE = False
+IMG_SIZE = False
 
+# LD means Local Discrimnator
+LD_CROP_SIZE = False
+HOLE_MIN_LEN = False
+HOLE_MAX_LEN = False
 
-LD_CROP_SIZE_PROPORTION = 1/2 # LD means Local Discrimnator
-RAND_CROP_MAX_PROPORTION = 1/3
-RAND_CROP_MIN_PROPORTION = 1/5
-LD_CROP_SIZE = int(IMG_SIZE * LD_CROP_SIZE_PROPORTION)  
-MAX_LEN = int(IMG_SIZE * RAND_CROP_MAX_PROPORTION)
-MIN_LEN = int(IMG_SIZE * RAND_CROP_MIN_PROPORTION)
+IMG_SHAPE = False
+LD_CROP_SHAPE = False
 
-IS_GRAYSCALE = True
-num_channels = 3
-if IS_GRAYSCALE:
-    num_channels = 1
+VAR_IMG_SHAPE = False
+MASK_SHAPE = False
+VAR_MASK_SHAPE = False
 
-IMG_SHAPE = (IMG_SIZE,IMG_SIZE,num_channels)
-LD_CROP_SHAPE = (LD_CROP_SIZE,LD_CROP_SIZE,num_channels)
-VAR_IMG_SHAPE = (None,None,num_channels)
-MASK_SHAPE = (IMG_SIZE,IMG_SIZE,1)
-VAR_MASK_SHAPE = (None,None,1)
+ALPHA = False
+D_MODEL_LR = False
 
+def set_global_consts(batch_size, img_size, 
+                      is_grayscale, ld_crop_size_proportion,
+                      rand_hole_min_proportion,rand_hole_max_proportion,
+                      alpha, d_model_lr):
+    global BATCH_SIZE, IMG_SIZE
+    global IMG_SHAPE, LD_CROP_SHAPE, VAR_IMG_SHAPE, MASK_SHAPE, VAR_MASK_SHAPE
+    global LD_CROP_SIZE, HOLE_MIN_LEN, HOLE_MAX_LEN
+    global ALPHA, D_MODEL_LR
 
-alpha = 0.0004
-Dmodel_lr = 0.01
+    BATCH_SIZE = batch_size
+    IMG_SIZE = img_size
+
+    LD_CROP_SIZE = int(IMG_SIZE * ld_crop_size_proportion)  
+    HOLE_MAX_LEN = int(LD_CROP_SIZE * rand_hole_max_proportion)
+    HOLE_MIN_LEN = int(LD_CROP_SIZE * rand_hole_min_proportion)
+
+    num_channels = 1 if is_grayscale else 3
+
+    IMG_SHAPE = (IMG_SIZE,IMG_SIZE,num_channels)
+    LD_CROP_SHAPE = (LD_CROP_SIZE,LD_CROP_SIZE,num_channels)
+    VAR_IMG_SHAPE = (None,None,num_channels)
+
+    MASK_SHAPE = (IMG_SIZE,IMG_SIZE,1)
+    VAR_MASK_SHAPE = (None,None,1)
+
+    ALPHA = alpha
+    D_MODEL_LR = d_model_lr
+
 
 def init_models():
     #----------------------------- completion_model ----------------------------
