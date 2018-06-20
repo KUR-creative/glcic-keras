@@ -60,11 +60,11 @@ if not (0.0 < args.ld_crop_size_proportion
     parser.error('[require] 0.0 < proportion of local discrimnator < 1.0')
 
 if not (0.0 < args.random_hole_min_proportion 
-        and   args.random_hole_min_proportion < 1.0):
-    parser.error('[require] 0.0 < minimum proportion of hole size < 1.0')
+        and   args.random_hole_min_proportion <= 1.0):
+    parser.error('[require] 0.0 < minimum proportion of hole size <= 1.0')
 if not (0.0 < args.random_hole_max_proportion 
-        and   args.random_hole_max_proportion < 1.0):
-    parser.error('[require] 0.0 < maximum proportion of hole size < 1.0')
+        and   args.random_hole_max_proportion <= 1.0):
+    parser.error('[require] 0.0 < maximum proportion of hole size <= 1.0')
 
 if not (0.0 < args.alpha and args.alpha < 1.0):
     parser.error('[require] 0.0 < alpha of joint model < 1.0')
