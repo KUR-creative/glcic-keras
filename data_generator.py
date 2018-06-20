@@ -94,14 +94,20 @@ def gen_batch(data_arr, batch_size, img_shape, ld_crop_size,
                              (mY,mX), (mH,mW))
         return y,x
     ''' yield minibatches '''
-    arr_len = data_arr.shape[0] // batch_size # never use remainders..
+    arr_len = data_arr.shape[0] - (data_arr.shape[0] % batch_size)#never use remainders..
+    #print('num data in data_arr', data_arr.shape[0])
+    #print('batch size', batch_size)
+    #print('len of data_arr to use', arr_len)
 
     idxes = np.arange(arr_len,dtype=np.uint32)
     np.random.shuffle(idxes) #shuffle needed.
+    #print(idxes)
 
     #print(data_arr.shape)
     #cv2.imshow('org',data_arr[1]); cv2.waitKey(0)
+    #print(arr_len, batch_size)
     for i in range(0,arr_len, batch_size):
+        #print('starting in ', i)
         if i + batch_size > arr_len: #TODO: => or > ?
             break
         origins = np.empty((batch_size,) + img_shape, dtype=data_arr.dtype)
@@ -110,6 +116,8 @@ def gen_batch(data_arr, batch_size, img_shape, ld_crop_size,
             idx = idxes[i:i+batch_size][n]
             origins[n] = data_arr[idx]
             #print(type(idx))
+            #print(idx,end=' ')
+        #print()
             #cv2.imshow('org',data_arr[idx]); cv2.waitKey(0)
             #cv2.imshow('org',origins[n]); cv2.waitKey(0)
 
