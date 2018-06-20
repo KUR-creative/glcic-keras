@@ -1,4 +1,4 @@
-from model import init_models, BATCH_SIZE, IMG_SIZE, LD_CROP_SIZE, HOLE_MAX_LEN, HOLE_MIN_LEN
+from model import init_models, BATCH_SIZE, IMG_SHAPE, LD_CROP_SIZE, HOLE_MAX_LEN, HOLE_MIN_LEN
 from data_generator import gen_batch
 from utils import ElapsedTimer
 
@@ -60,7 +60,7 @@ def train(DATASET_NAME, NUM_EPOCH, Tc, Td, SAVE_INTERVAL, MAILING_ENABLED):
     for epoch in range(NUM_EPOCH):
         #epoch_timer = ElapsedTimer('1 epoch training time')
         #--------------------------------------------------------------------------
-        for batch in gen_batch(data_arr, BATCH_SIZE, IMG_SIZE, LD_CROP_SIZE,
+        for batch in gen_batch(data_arr, BATCH_SIZE, IMG_SHAPE, LD_CROP_SIZE,
                                HOLE_MIN_LEN, HOLE_MAX_LEN, mean_pixel_value):
             if epoch < Tc:
                 mse_loss = trainC(Cmodel, batch, epoch)
