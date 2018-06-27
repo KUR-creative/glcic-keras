@@ -1,4 +1,3 @@
-from model import init_models, IMG_SHAPE
 import numpy as np
 import h5py, cv2, os
 
@@ -85,8 +84,9 @@ def get_complnet_inputs(masked_origins,mask_yxhws,
         complnet_inputs[idx][y:y+h,x:x+w] = mean_pixel_value
     return complnet_inputs
 
-def gen_batch(data_arr, batch_size, img_size, ld_crop_size,
+def gen_batch(data_arr, batch_size, img_shape, ld_crop_size,
               min_mask_len, max_mask_len, mean_pixel_value):
+    img_size = img_shape[0]
     def _get_crop_yx(mask_yxhw_arr):
         mY,mX, mH,mW = mask_yxhw_arr
         y,x = get_ld_crop_yx((img_size,img_size),
@@ -94,22 +94,30 @@ def gen_batch(data_arr, batch_size, img_size, ld_crop_size,
                              (mY,mX), (mH,mW))
         return y,x
     ''' yield minibatches '''
-    arr_len = data_arr.shape[0] // batch_size # never use remainders..
+    arr_len = data_arr.shape[0] - (data_arr.shape[0] % batch_size)#never use remainders..
+    #print('num data in data_arr', data_arr.shape[0])
+    #print('batch size', batch_size)
+    #print('len of data_arr to use', arr_len)
 
     idxes = np.arange(arr_len,dtype=np.uint32)
     np.random.shuffle(idxes) #shuffle needed.
+    #print(idxes)
 
     #print(data_arr.shape)
     #cv2.imshow('org',data_arr[1]); cv2.waitKey(0)
+    #print(arr_len, batch_size)
     for i in range(0,arr_len, batch_size):
+        #print('starting in ', i)
         if i + batch_size > arr_len: #TODO: => or > ?
             break
-        origins = np.empty((batch_size,) + IMG_SHAPE,
-                                       dtype=data_arr.dtype)
+        origins = np.empty((batch_size,) + img_shape, dtype=data_arr.dtype)
+        #print(origins.shape)
         for n in range(batch_size):
             idx = idxes[i:i+batch_size][n]
             origins[n] = data_arr[idx]
             #print(type(idx))
+            #print(idx,end=' ')
+        #print()
             #cv2.imshow('org',data_arr[idx]); cv2.waitKey(0)
             #cv2.imshow('org',origins[n]); cv2.waitKey(0)
 

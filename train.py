@@ -1,4 +1,4 @@
-from model import init_models, BATCH_SIZE, IMG_SIZE, LD_CROP_SIZE, HOLE_MAX_LEN, HOLE_MIN_LEN
+from model import init_models, BATCH_SIZE, IMG_SHAPE, LD_CROP_SIZE, HOLE_MAX_LEN, HOLE_MIN_LEN
 from data_generator import gen_batch
 from utils import ElapsedTimer
 
@@ -54,13 +54,14 @@ def train(DATASET_NAME, NUM_EPOCH, Tc, Td, SAVE_INTERVAL, MAILING_ENABLED):
     #-------------------------------------------------------------------------------
     data_arr = data_file['images'] # already preprocessed, float32.
     mean_pixel_value = data_file['mean_pixel_value'][()] # value is float
+    print('data_arr shape',data_arr.shape)
 
     timer = ElapsedTimer('Total Training')
     #-------------------------------------------------------------------------------
     for epoch in range(NUM_EPOCH):
-        #epoch_timer = ElapsedTimer('1 epoch training time')
+        epoch_timer = ElapsedTimer('    :')
         #--------------------------------------------------------------------------
-        for batch in gen_batch(data_arr, BATCH_SIZE, IMG_SIZE, LD_CROP_SIZE,
+        for batch in gen_batch(data_arr, BATCH_SIZE, IMG_SHAPE, LD_CROP_SIZE,
                                HOLE_MIN_LEN, HOLE_MAX_LEN, mean_pixel_value):
             if epoch < Tc:
                 mse_loss = trainC(Cmodel, batch, epoch)
@@ -69,16 +70,17 @@ def train(DATASET_NAME, NUM_EPOCH, Tc, Td, SAVE_INTERVAL, MAILING_ENABLED):
                 if epoch >= Tc + Td:
                     joint_loss,mse,gan = trainC_in(CDmodel, batch, epoch)
         #--------------------------------------------------------------------------
-        #epoch_timer.elapsed_time()
 
         if epoch < Tc:
-            print('epoch %d: [C mse loss: %e]' % (epoch, mse_loss))
+            print('epoch %d: [C mse loss: %e]' % (epoch, mse_loss), end='')
         else:
             if epoch >= Tc + Td:
                 print('epoch %d: [joint loss: %e | mse loss: %e, gan loss: %e]' 
-                        % (epoch, joint_loss, mse, gan))
+                        % (epoch, joint_loss, mse, gan), end='')
             else:
-                print('epoch %d: [D bce loss: %e]' % (epoch, bce_d_loss))
+                print('epoch %d: [D bce loss: %e]' % (epoch, bce_d_loss), end='')
+        epoch_timer.elapsed_time()
+        #print()
         save(Cmodel,Dmodel,batch, SAVE_INTERVAL,epoch,NUM_EPOCH, 'output')
     #-------------------------------------------------------------------------------
     time_str = timer.elapsed_time()

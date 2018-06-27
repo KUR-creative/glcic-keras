@@ -14,7 +14,8 @@ def write_result_img(npy_path,img_path,
         result_img[i*size:(i+1)*size, 2*size:3*size] = result[2,i]
     # convert correct image format
     result_img = (result_img * 255).astype(np.uint8)
-    result_img = cv2.cvtColor(result_img,cv2.COLOR_BGR2RGB)
+    if num_channels != 1:
+        result_img = cv2.cvtColor(result_img,cv2.COLOR_BGR2RGB)
     cv2.imwrite(img_path, result_img)
 
 #TODO: load saved complnet and predict!
@@ -117,16 +118,16 @@ if __name__ == "__main__":
     write_result_img('./output/I_O_GT__199.npy',
                      './output/result199.png',bat_size,img_size,1)
     '''
-    bat_size = 32
+    bat_size = 64
     img_size = 192
     #for i in range(40,180+20,20):
-    for i in range(0,10+1,2):
+    for i in range(0,4+1,2):
     #for i in range(60,220+1,20):
         write_result_img('./output/I_O_GT__%d.npy' % i,
                          './output/result%d.png' % i,
                          bat_size,img_size,1)
         print(i)
+    write_result_img('./output/I_O_GT__5.npy',
+                     './output/result5.png',bat_size,img_size)
     '''
-    write_result_img('./output/I_O_GT__239.npy',
-                     './output/result239.png',bat_size,img_size)
     '''
