@@ -12,6 +12,6 @@ class ElapsedTimer(object):
         else:
             return str(sec / (60 * 60)) + " hr"
     def elapsed_time(self):
-        print(self.string + ": %s " % self.elapsed(time.time() - self.start_time),
+        print(self.string + ": %s" % self.elapsed(time.time() - self.start_time),
               flush=True)
-        return (self.string + ": %s " % self.elapsed(time.time() - self.start_time))
+        return (self.string + ": %s" % self.elapsed(time.time() - self.start_time))
