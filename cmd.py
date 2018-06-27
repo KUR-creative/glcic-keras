@@ -22,10 +22,10 @@ parser.add_argument('-l', '--ld_crop_size_proportion',
     type=float, required=True)  
 
 parser.add_argument('-m', '--random_hole_min_proportion',
-    help='minimum proportion of random hole size. 0 < m < 1',
+    help='minimum size proportion of random hole in local crop. 0 < m <= 1',
     type=float, required=True)  
 parser.add_argument('-M', '--random_hole_max_proportion',
-    help='maximum proportion of random hole size. 0 < M < 1',
+    help='maximum size proportion of random hole in local crop. 0 < M <= 1',
     type=float, required=True) 
 
 parser.add_argument('-a', '--alpha',
@@ -60,11 +60,11 @@ if not (0.0 < args.ld_crop_size_proportion
     parser.error('[require] 0.0 < proportion of local discrimnator < 1.0')
 
 if not (0.0 < args.random_hole_min_proportion 
-        and   args.random_hole_min_proportion < 1.0):
-    parser.error('[require] 0.0 < minimum proportion of hole size < 1.0')
+        and   args.random_hole_min_proportion <= 1.0):
+    parser.error('[require] 0.0 < minimum proportion of hole size <= 1.0')
 if not (0.0 < args.random_hole_max_proportion 
-        and   args.random_hole_max_proportion < 1.0):
-    parser.error('[require] 0.0 < maximum proportion of hole size < 1.0')
+        and   args.random_hole_max_proportion <= 1.0):
+    parser.error('[require] 0.0 < maximum proportion of hole size <= 1.0')
 
 if not (0.0 < args.alpha and args.alpha < 1.0):
     parser.error('[require] 0.0 < alpha of joint model < 1.0')
