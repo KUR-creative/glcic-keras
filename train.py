@@ -72,13 +72,13 @@ def train(DATASET_NAME, NUM_EPOCH, Tc, Td, SAVE_INTERVAL, MAILING_ENABLED):
         #--------------------------------------------------------------------------
 
         if epoch < Tc:
-            print('epoch %d: [C mse loss: %e]' % (epoch, mse_loss), end='')
+            print('epoch {}: [C mse loss: {}]'.format(epoch, mse_loss), end='')
         else:
             if epoch >= Tc + Td:
-                print('epoch %d: [joint loss: %e | mse loss: %e, gan loss: %e]' 
-                        % (epoch, joint_loss, mse, gan), end='')
+                print('epoch {}: [joint loss: {} | mse loss: {}, gan loss: {}]'\
+                       .format(epoch, joint_loss, mse, gan), end='')
             else:
-                print('epoch %d: [D bce loss: %e]' % (epoch, bce_d_loss), end='')
+                print('epoch {}: [D bce loss: {}]'.format(epoch, bce_d_loss), end='')
         epoch_timer.elapsed_time()
         #print()
         save(Cmodel,Dmodel,batch, SAVE_INTERVAL,epoch,NUM_EPOCH, 'output')
