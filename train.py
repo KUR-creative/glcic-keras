@@ -59,7 +59,7 @@ def train(DATASET_NAME, NUM_EPOCH, Tc, Td, SAVE_INTERVAL, MAILING_ENABLED):
     timer = ElapsedTimer('Total Training')
     #-------------------------------------------------------------------------------
     for epoch in range(NUM_EPOCH):
-        #epoch_timer = ElapsedTimer('    :')
+        epoch_timer = ElapsedTimer('    :')
         #--------------------------------------------------------------------------
         for batch in gen_batch(data_arr, BATCH_SIZE, IMG_SHAPE, LD_CROP_SIZE,
                                HOLE_MIN_LEN, HOLE_MAX_LEN, mean_pixel_value):
@@ -79,8 +79,8 @@ def train(DATASET_NAME, NUM_EPOCH, Tc, Td, SAVE_INTERVAL, MAILING_ENABLED):
                         % (epoch, joint_loss, mse, gan), end='')
             else:
                 print('epoch %d: [D bce loss: %e]' % (epoch, bce_d_loss), end='')
-        #epoch_timer.elapsed_time()
-        print()
+        epoch_timer.elapsed_time()
+        #print()
         save(Cmodel,Dmodel,batch, SAVE_INTERVAL,epoch,NUM_EPOCH, 'output')
     #-------------------------------------------------------------------------------
     time_str = timer.elapsed_time()
