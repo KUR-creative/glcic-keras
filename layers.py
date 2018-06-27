@@ -104,14 +104,20 @@ def discrimination_net(global_shape=(128, 128, 3), local_shape=(64, 64, 3),name=
     x_g = set_layer_BN_relu(g_img, Conv2D,  32, (5,5), strides=(2,2), padding='same')
     x_g = set_layer_BN_relu(  x_g, Conv2D,  64, (5,5), strides=(2,2), padding='same')
     x_g = set_layer_BN_relu(  x_g, Conv2D, 128, (5,5), strides=(2,2), padding='same')
+    x_g = set_layer_BN_relu(  x_g, Conv2D, 256, (5,5), strides=(2,2), padding='same')
+    x_g = set_layer_BN_relu(  x_g, Conv2D, 256, (5,5), strides=(2,2), padding='same')
+    x_g = set_layer_BN_relu(  x_g, Conv2D, 256, (5,5), strides=(2,2), padding='same')
     x_g = Flatten()(x_g)
-    x_g = Dense(256)(x_g) 
+    x_g = Dense(512)(x_g) 
 
     l_img = Input(shape=local_shape)
     x_l = set_layer_BN_relu(l_img, Conv2D,  32, (5,5), strides=(2,2), padding='same')
     x_l = set_layer_BN_relu(  x_l, Conv2D,  64, (5,5), strides=(2,2), padding='same')
+    x_l = set_layer_BN_relu(  x_l, Conv2D, 128, (5,5), strides=(2,2), padding='same')
+    x_l = set_layer_BN_relu(  x_l, Conv2D, 256, (5,5), strides=(2,2), padding='same')
+    x_l = set_layer_BN_relu(  x_l, Conv2D, 256, (5,5), strides=(2,2), padding='same')
     x_l = Flatten()(x_l)
-    x_l = Dense(128)(x_l) 
+    x_l = Dense(512)(x_l) 
 
     x = concatenate([x_g, x_l]) # no activation. or..?
     x = Dense(1, activation='sigmoid')(x)
