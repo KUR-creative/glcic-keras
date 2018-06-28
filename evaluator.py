@@ -32,6 +32,14 @@ def mask_from_user(mask_hw, origin):
     mean_mask = mask * np.mean(origin) # images 2
     return mean_mask, np.logical_not(mean_mask).astype(np.float32)
 
+def load_r_mask(imgpath, origin):
+    mask, hw = load_image(imgpath)
+    mask = (mask[:,:,0] > 0.1).astype(np.float32)
+    mean_mask = mask * np.mean(origin) # images 2
+    cv2.imshow('mask',mask); cv2.waitKey(0)
+    cv2.imshow('mean mask',mean_mask); cv2.waitKey(0)
+    return mean_mask, np.logical_not(mean_mask).astype(np.float32)
+    
 def padding_removed(padded_img,no_pad_shape):
     pH,pW,_ = padded_img.shape
     nH,nW,_ = no_pad_shape
@@ -41,6 +49,9 @@ def padding_removed(padded_img,no_pad_shape):
     # TODO: 0~pH-dH is incorrect!
     return padded_img[0:pH-dH,0:pW-dW]
 
+origin, hw = load_image('./eval-data/mini_evals/003.jpg')
+load_r_mask('./eval-data/mini_evals/003_mask.png',origin)
+'''
 import sys
 imgpath = sys.argv[1]
 origin, hw = load_image(imgpath)
@@ -66,6 +77,7 @@ mask = np.logical_not(not_mask).astype(np.float32)
 completed = complnet_output * mask + holed_origin
 
 
+'''
 #bgr_origin = cv2.cvtColor(origin,cv2.COLOR_RGB2BGR)
 #cv2.imshow('origin',bgr_origin); cv2.waitKey(0)
 #cv2.imshow('mean_mask',mean_mask); cv2.waitKey(0)
@@ -74,7 +86,7 @@ completed = complnet_output * mask + holed_origin
 #cv2.imshow('holed_origin',holed_origin); cv2.waitKey(0)
 #cv2.imshow('complnet_input',complnet_input); cv2.waitKey(0)
 #cv2.imshow('complnet_output',complnet_output); cv2.waitKey(0)
-bgr_completed = cv2.cvtColor(completed,cv2.COLOR_RGB2BGR)
-cv2.imshow('completed',bgr_completed); cv2.waitKey(0)
+#bgr_completed = cv2.cvtColor(completed,cv2.COLOR_RGB2BGR)
+#cv2.imshow('completed',bgr_completed); cv2.waitKey(0)
 
 print('is it ok?')
