@@ -13,9 +13,11 @@ def load_compl_model(model_path, img_shape=(None,None,3)):
     compl_model = Model([complnet_inp], complnet_out)
     compl_model.load_weights(model_path, by_name=True)
 
+    '''
     compl_model.summary()
     plot_model(compl_model, to_file='C_model_test.png', 
                show_shapes=True)
+    '''
     return compl_model
 
 def load_image(img_path):
