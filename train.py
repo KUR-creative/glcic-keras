@@ -47,7 +47,7 @@ def save(Cmodel,Dmodel,batch, period,epoch,num_epoch, result_dir):
 Cmodel, Dmodel, CDmodel = init_models()
 
 from tqdm import tqdm
-def train(DATASET_NAME, NUM_EPOCH, Tc, Td, SAVE_INTERVAL, MAILING_ENABLED):
+def train(DATASET_NAME, NUM_EPOCH, Tc, Td, SAVE_INTERVAL, MAILING_ENABLED,used_data_ratio):
     #print('num_epoch=',NUM_EPOCH,'Tc=',Tc,'Td=',Td)
     #print('mailing enabled' if MAILING_ENABLED else 'mailing_disabled')
 
@@ -55,7 +55,11 @@ def train(DATASET_NAME, NUM_EPOCH, Tc, Td, SAVE_INTERVAL, MAILING_ENABLED):
     #-------------------------------------------------------------------------------
     data_arr = data_file['images'] # already preprocessed, float32.
     mean_pixel_value = data_file['mean_pixel_value'][()] # value is float
-    print('data_arr shape',data_arr.shape)
+
+    full_arr_len = int(data_arr.shape[0] * used_data_ratio)
+    used_arr_len = full_arr_len - (full_arr_len % BATCH_SIZE)#never use remainders..
+    print('data_arr shape: ', data_arr.shape)
+    print('length of data to learn: ', used_arr_len)
 
     timer = ElapsedTimer('Total Training')
     #-------------------------------------------------------------------------------
@@ -63,7 +67,7 @@ def train(DATASET_NAME, NUM_EPOCH, Tc, Td, SAVE_INTERVAL, MAILING_ENABLED):
         epoch_timer = ElapsedTimer('    :')
         #--------------------------------------------------------------------------
         for batch in gen_batch(data_arr, BATCH_SIZE, IMG_SHAPE, LD_CROP_SIZE,
-                               HOLE_MIN_LEN, HOLE_MAX_LEN, mean_pixel_value, 0.001):
+                               HOLE_MIN_LEN, HOLE_MAX_LEN, mean_pixel_value,used_data_ratio):
             if epoch < Tc:
                 mse_loss = trainC(Cmodel, batch, epoch)
             else:

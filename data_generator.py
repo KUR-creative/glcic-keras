@@ -97,7 +97,6 @@ def gen_batch(data_arr, batch_size, img_shape, ld_crop_size,
     ''' yield minibatches '''
     full_arr_len = int(data_arr.shape[0] * used_ratio)
     used_arr_len = full_arr_len - (full_arr_len % batch_size)#never use remainders..
-    print(full_arr_len, used_ratio, used_arr_len)
     #print('num data in data_arr', data_arr.shape[0])
     #print('batch size', batch_size)
     #print('len of data_arr to use', used_arr_len)

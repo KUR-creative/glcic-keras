@@ -44,6 +44,10 @@ parser.add_argument('-tc', '--tc_ratio',
 parser.add_argument('-td', '--td_ratio',
     help='portion of epochs D model(default:0.02). 0 < td < 1',
     type=float, default=0.02)  
+
+parser.add_argument('-dr', '--used_data_ratio',
+    help='ratio of data to use from full dataset',
+    type=float, default=1.0)
 parser.add_argument('-si', '--save_interval',
     help='save interval of epochs. 1 <= si < num_epoch',
     type=int, required=True)  
@@ -72,6 +76,9 @@ if not (0.0 < args.learning_rate):
     parser.error('[require] 0.0 < learning rate of Discrimnator model')
 if not (1 <= args.save_interval and args.save_interval < args.num_epoch): 
     parser.error('[require] 1 <= save interval of epochs. < num_epoch')
+
+if not (0.0 < args.used_data_ratio and args.used_data_ratio <= 1.0):
+    parser.error('[require] 0.0 < used_data_ratio <= 1.0')
 
 if not (0 <= args.num_epoch): 
     parser.error('[require] 0 <= number of epochs')
@@ -124,6 +131,7 @@ if __name__ == "__main__":
           '              Tc = %d \n' % tc,
           '              Td = %d \n' % td,
           '          Tjoint = %d \n' % t_joint,
+          ' used data ratio = %f \n' % args.used_data_ratio,
           'saving intervals = %d \n' % args.save_interval,
           '-----------------------------------\n',
           '        mailing? = %s \n' % ('disabled' if args.mailing_enabled == False else 'enabled'),
@@ -133,5 +141,6 @@ if __name__ == "__main__":
     train(args.dataset_name, 
           args.num_epoch, tc, td,
           args.save_interval, 
-          (False if args.mailing_enabled == False else True))
+          (False if args.mailing_enabled == False else True),
+          args.used_data_ratio)
 
