@@ -95,36 +95,16 @@ def gen_batch(data_arr, batch_size, img_shape, ld_crop_size,
                              (mY,mX), (mH,mW))
         return y,x
     ''' yield minibatches '''
-    #print('num data in data_arr', data_arr.shape[0])
-    #print('batch size', batch_size)
-    #print('len of data_arr to use', learned_arr_len)
 
     idxes = np.arange(data_arr.shape[0],dtype=np.uint32)
-    print(idxes.shape)
-    print(idxes)
     np.random.shuffle(idxes) #shuffle needed.
-    print(idxes)
-    #print(idxes)
-
-    #print(data_arr.shape)
-    #cv2.imshow('org',data_arr[1]); cv2.waitKey(0)
-    #print(learned_arr_len, batch_size)
     for i in range(0,learned_arr_len, batch_size):
-        #print('starting in ', i)
         if i + batch_size > learned_arr_len: #TODO: => or > ?
             break
         origins = np.empty((batch_size,) + img_shape, dtype=data_arr.dtype)
-        #print(origins.shape)
         for n in range(batch_size):
             idx = idxes[i:i+batch_size][n]
             origins[n] = data_arr[idx]
-            #print(type(idx))
-            #print(idx,end=' ')
-        #print()
-            #cv2.imshow('org',data_arr[idx]); cv2.waitKey(0)
-            #cv2.imshow('org',origins[n]); cv2.waitKey(0)
-
-        #cv2.imshow('wtf',origins[1]); cv2.waitKey(0)
 
         maskeds, mask_yxhws = get_random_maskeds(batch_size, 
                                                  img_size, 
