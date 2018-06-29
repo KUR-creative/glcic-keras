@@ -21,6 +21,54 @@ def write_result_img(npy_path,img_path,
 #TODO: load saved complnet and predict!
 #TODO: create interactive demo!
 
+                
+if __name__ == "__main__":
+    bat_size = 96
+    img_size = 128
+    #for i in range(40,180+20,20):
+    for i in range(20,500,20):
+    #for i in range(60,220+1,20):
+        write_result_img('./output/I_O_GT__%d.npy' % i,
+                         './output/result%d.png' % i,
+                         bat_size,img_size,1)
+        print(i)
+    write_result_img('./output/I_O_GT__499.npy',
+                     './output/result499.png',bat_size,img_size)
+    '''
+    #unittest.main()
+    batch_size = 32
+    img_size = 192
+    maxl = img_size // 2
+    minl = img_size // 4
+    with h5py.File('./data128_half.h5','r') as data_file:
+        data_arr = data_file['images']
+        mean_pixel_value = data_file['mean_pixel_value'][()] / 255
+
+        for batch in gen_batch(data_arr, batch_size, 
+                               img_size, img_size // 2, 
+                               minl,maxl,mean_pixel_value):
+            origins, complnet_inputs, masked_origins, maskeds, ld_crop_yxhws = batch
+            lY,lX, lH,lW = ld_crop_yxhws[0]
+            #print('uwang good',ld_crop_yxhws)
+            cv2.imshow('img',origins[0]); cv2.waitKey(0)
+            #cv2.imshow('img2',origins[batch_size-1]); cv2.waitKey(0)
+            cv2.imshow('ab',masked_origins[0]); cv2.waitKey(0) 
+            #cv2.imshow('ab2',masked_origins[batch_size-1]); cv2.waitKey(0)
+            cv2.imshow('complnet_inp',complnet_inputs[0]); cv2.waitKey(0)
+            #cv2.imshow('complnet_inp2',complnet_inputs[batch_size-1]); cv2.waitKey(0) 
+            cv2.imshow('ld_crop',complnet_inputs[0][lY:lY+lH,lX:lX+lW]); cv2.waitKey(0)
+            #cv2.imshow('ld_crop2',complnet_inputs[batch_size-1][lY:lY+lH,lX:lX+lW]); cv2.waitKey(0)
+
+    write_result_img('./output/I_O_GT__180.npy',
+                     './output/result.png',bat_size,img_size,1)
+    write_result_img('./output/I_O_GT__160.npy',
+                     './output/result12.png',bat_size,img_size,1)
+    write_result_img('./output/I_O_GT__199.npy',
+                     './output/result199.png',bat_size,img_size,1)
+    '''
+    '''
+    '''
+
 '''
 # chunk_generator is for hdf5 file generation!!!!
 def chunk_generator(np_array,chk_size):
@@ -84,50 +132,3 @@ class Test_chunk_generator(unittest.TestCase):
         #self.assertEqual(arr[-1].shape[0], remainder_size)
         print(dst_arr)
 '''
-                
-if __name__ == "__main__":
-    '''
-    #unittest.main()
-    batch_size = 32
-    img_size = 192
-    maxl = img_size // 2
-    minl = img_size // 4
-    with h5py.File('./data128_half.h5','r') as data_file:
-        data_arr = data_file['images']
-        mean_pixel_value = data_file['mean_pixel_value'][()] / 255
-
-        for batch in gen_batch(data_arr, batch_size, 
-                               img_size, img_size // 2, 
-                               minl,maxl,mean_pixel_value):
-            origins, complnet_inputs, masked_origins, maskeds, ld_crop_yxhws = batch
-            lY,lX, lH,lW = ld_crop_yxhws[0]
-            #print('uwang good',ld_crop_yxhws)
-            cv2.imshow('img',origins[0]); cv2.waitKey(0)
-            #cv2.imshow('img2',origins[batch_size-1]); cv2.waitKey(0)
-            cv2.imshow('ab',masked_origins[0]); cv2.waitKey(0) 
-            #cv2.imshow('ab2',masked_origins[batch_size-1]); cv2.waitKey(0)
-            cv2.imshow('complnet_inp',complnet_inputs[0]); cv2.waitKey(0)
-            #cv2.imshow('complnet_inp2',complnet_inputs[batch_size-1]); cv2.waitKey(0) 
-            cv2.imshow('ld_crop',complnet_inputs[0][lY:lY+lH,lX:lX+lW]); cv2.waitKey(0)
-            #cv2.imshow('ld_crop2',complnet_inputs[batch_size-1][lY:lY+lH,lX:lX+lW]); cv2.waitKey(0)
-
-    write_result_img('./output/I_O_GT__180.npy',
-                     './output/result.png',bat_size,img_size,1)
-    write_result_img('./output/I_O_GT__160.npy',
-                     './output/result12.png',bat_size,img_size,1)
-    write_result_img('./output/I_O_GT__199.npy',
-                     './output/result199.png',bat_size,img_size,1)
-    '''
-    bat_size = 96
-    img_size = 128
-    #for i in range(40,180+20,20):
-    for i in range(20,500,20):
-    #for i in range(60,220+1,20):
-        write_result_img('./output/I_O_GT__%d.npy' % i,
-                         './output/result%d.png' % i,
-                         bat_size,img_size,1)
-        print(i)
-    write_result_img('./output/I_O_GT__499.npy',
-                     './output/result499.png',bat_size,img_size)
-    '''
-    '''

@@ -48,14 +48,10 @@ Cmodel, Dmodel, CDmodel = init_models()
 
 from tqdm import tqdm
 def train(DATASET_NAME, NUM_EPOCH, Tc, Td, SAVE_INTERVAL, MAILING_ENABLED,learned_data_ratio):
-    #print('num_epoch=',NUM_EPOCH,'Tc=',Tc,'Td=',Td)
-    #print('mailing enabled' if MAILING_ENABLED else 'mailing_disabled')
-
     data_file = h5py.File(DATASET_NAME,'r') 
     #-------------------------------------------------------------------------------
     data_arr = data_file['images'] # already preprocessed, float32.
     mean_pixel_value = data_file['mean_pixel_value'][()] # value is float
-
     learned_arr_len = int(data_arr.shape[0] * learned_data_ratio)
     learned_arr_len = learned_arr_len - (learned_arr_len % BATCH_SIZE)#never use remainders..
     print('data_arr shape: ', data_arr.shape)
