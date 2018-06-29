@@ -56,10 +56,11 @@ def padding_removed(padded_img,no_pad_shape):
     # TODO: 0~pH-dH is incorrect!
     return padded_img[0:pH-dH,0:pW-dW]
 
-origin, hw = load_image('./eval-data/mini_evals/011.jpg')
-mean_mask, not_mask = load_r_mask('./eval-data/mini_evals/011_mask.png',
+origin, hw = load_image('./eval-data/mini_evals/021.jpg')
+mean_mask, not_mask = load_r_mask('./eval-data/mini_evals/021_mask.png',
                                   origin)
 h,w = hw
+origin = origin[:,:,0].reshape((h,w,1)) # grayscale only!
 mean_mask = mean_mask.reshape((h,w,1))
 not_mask = not_mask.reshape((h,w,1))
 #print(mean_mask.shape, not_mask.shape)
@@ -91,15 +92,17 @@ mask = np.logical_not(not_mask).astype(np.float32)
 completed = complnet_output * mask + holed_origin
 
 
-bgr_origin = cv2.cvtColor(origin,cv2.COLOR_RGB2BGR)
-cv2.imshow('origin',bgr_origin); cv2.waitKey(0)
+#bgr_origin = cv2.cvtColor(origin,cv2.COLOR_RGB2BGR)
+cv2.imshow('origin',origin); cv2.waitKey(0)
 #cv2.imshow('mean_mask',mean_mask); cv2.waitKey(0)
 #cv2.imshow('not_mask',not_mask); cv2.waitKey(0)
 cv2.imshow('mask',mask); cv2.waitKey(0)
 #cv2.imshow('holed_origin',holed_origin); cv2.waitKey(0)
 #cv2.imshow('complnet_input',complnet_input); cv2.waitKey(0)
 #cv2.imshow('complnet_output',complnet_output); cv2.waitKey(0)
-bgr_completed = cv2.cvtColor(completed,cv2.COLOR_RGB2BGR)
-cv2.imshow('completed',bgr_completed); cv2.waitKey(0)
+#completed = cv2.cvtColor(completed,cv2.COLOR_RGB2BGR)
+cv2.imshow('completed',completed); cv2.waitKey(0)
 
+print(origin.shape)
+print(mask.shape)
 print('is it ok?')
