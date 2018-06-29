@@ -1,3 +1,9 @@
+'''
+import sys
+imgpath = sys.argv[1]
+origin, hw = load_image(imgpath)
+mean_mask, not_mask = mask_from_user(hw, origin)
+'''
 from data_generator import gen_batch
 from layers import completion_net, discrimination_net
 from tester_ui import tester_ui
@@ -7,6 +13,8 @@ from keras.layers import Input, Add, Multiply, merge
 from keras.models import Model
 from keras.utils import plot_model
 
+def mse(A,B):
+    return ((A-B)**2).mean()
 def load_compl_model(model_path, img_shape=(None,None,3)):
     complnet_inp = Input(shape=img_shape, name='complnet_inp')
     complnet_out = completion_net(img_shape)(complnet_inp)
@@ -58,20 +66,16 @@ def padding_removed(padded_img,no_pad_shape):
     # TODO: 0~pH-dH is incorrect!
     return padded_img[0:pH-dH,0:pW-dW]
 
-origin, hw = load_image('./eval-data/mini_evals/021.jpg')
-mean_mask, not_mask = load_r_mask('./eval-data/mini_evals/021_mask.png',
+img_no = '001'
+origin, hw = load_image('./eval-data/mini_evals/'+img_no+'.jpg')
+mean_mask, not_mask = load_r_mask('./eval-data/mini_evals/'+img_no+'_mask.png',
                                   origin)
 h,w = hw
 origin = origin[:,:,0].reshape((h,w,1)) # grayscale only!
 mean_mask = mean_mask.reshape((h,w,1))
 not_mask = not_mask.reshape((h,w,1))
 #print(mean_mask.shape, not_mask.shape)
-'''
-import sys
-imgpath = sys.argv[1]
-origin, hw = load_image(imgpath)
-mean_mask, not_mask = mask_from_user(hw, origin)
-'''
+
 holed_origin = origin * not_mask
 complnet_input = np.copy(holed_origin) + mean_mask
 
@@ -95,16 +99,44 @@ completed = complnet_output * mask + holed_origin
 
 
 #bgr_origin = cv2.cvtColor(origin,cv2.COLOR_RGB2BGR)
-cv2.imshow('origin',origin); cv2.waitKey(0)
+cv2.imshow('origin',origin); cv2.waitKey(0)#-----------------
 #cv2.imshow('mean_mask',mean_mask); cv2.waitKey(0)
 #cv2.imshow('not_mask',not_mask); cv2.waitKey(0)
-cv2.imshow('mask',mask); cv2.waitKey(0)
+cv2.imshow('mask',mask); cv2.waitKey(0)#---------------------
 #cv2.imshow('holed_origin',holed_origin); cv2.waitKey(0)
 #cv2.imshow('complnet_input',complnet_input); cv2.waitKey(0)
 #cv2.imshow('complnet_output',complnet_output); cv2.waitKey(0)
 #completed = cv2.cvtColor(completed,cv2.COLOR_RGB2BGR)
-cv2.imshow('completed',completed); cv2.waitKey(0)
+cv2.imshow('completed',completed); cv2.waitKey(0)#-----------
 
 print(origin.shape)
 print(mask.shape)
 print('is it ok?')
+
+expected,_ = load_image('./eval-data/mini_evals/'+img_no+'_clean.png')
+cv2.imshow('expected',expected); cv2.waitKey(0)
+expected = expected * mask
+
+max_err_img = cv2.imread('./eval-data/mini_evals/'+img_no+'_clean.png')
+
+max_err_img = cv2.bitwise_not(max_err_img)
+cv2.imshow('max error img',max_err_img); cv2.waitKey(0)
+print(np.sum(max_err_img))
+
+max_err_img = (max_err_img.astype(np.float32) / 255) * mask
+cv2.imshow('masked max error img',max_err_img); cv2.waitKey(0)
+print(np.sum(max_err_img))
+#print(answer.shape)
+#max_err_img = cv2.bitwise_not(answer.astype()).astype(np.float32) * mask
+actual = completed * mask
+
+#cv2.imshow('expected',expected); cv2.waitKey(0)
+#cv2.imshow('actual',actual); cv2.waitKey(0)
+#cv2.imshow('max error img',max_err_img); cv2.waitKey(0)
+
+result_mse = mse(expected,actual)
+max_mse = mse(expected,max_err_img)
+print('mse =', result_mse)
+print('max mse =', max_mse)
+print('similarity = {:3f}%'.format((max_mse - result_mse) / max_mse * 100))
+print('error = {:3f}%'.format(100 - (max_mse - result_mse) / max_mse * 100) )
