@@ -109,6 +109,7 @@ if ((args.c_model_path == None) ^ (args.d_model_path == None)):
     parser.error('[require] Both C and D models are required. ')
 
 
+import sys
 if __name__ == "__main__":
     import model
     model.set_global_consts(args.batch_size, args.img_size,
@@ -119,6 +120,7 @@ if __name__ == "__main__":
     tc = int(args.num_epoch * args.tc_ratio)
     td = int(args.num_epoch * args.td_ratio)  
     t_joint = args.num_epoch - tc - td
+    print(' '.join(sys.argv),'\n')
     print(' ==============SUMMARY==============\n',
           '    dataset name = %s \n' % args.dataset_name,
           '    dataset type = %s \n' % ('grayscale' if args.is_color_dataset == False else 'rgb'), 
@@ -148,13 +150,24 @@ if __name__ == "__main__":
           'learn data ratio = %f \n' % args.learned_data_ratio,
           'saving intervals = %d \n' % args.save_interval,
           '-----------------------------------\n',
+          ' loaded C model? = %s \n' % (args.c_model_path if args.c_model_path else 'no'),
+          ' loaded D model? = %s \n' % (args.d_model_path if args.d_model_path else 'no'),
+          '       now epoch = %d \n' % args.current_epoch,
+          '-----------------------------------\n',
           '        mailing? = %s \n' % ('disabled' if args.mailing_enabled == False else 'enabled'),
           '====================================')
 
-    from train import train 
-    train(args.dataset_name, 
-          args.num_epoch, tc, td,
-          args.save_interval, 
-          (False if args.mailing_enabled == False else True),
-          args.learned_data_ratio)
+    from train import train, continued_train
+    if args.c_model_path and args.d_model_path:
+        continued_train(args.dataset_name, args.c_model_path, args.d_model_path, 
+                        args.num_epoch, tc, td, args.current_epoch,
+                        args.save_interval, 
+                        (False if args.mailing_enabled == False else True),
+                        args.learned_data_ratio)
+    else:
+        train(args.dataset_name, 
+              args.num_epoch, tc, td,
+              args.save_interval, 
+              (False if args.mailing_enabled == False else True),
+              args.learned_data_ratio)
 

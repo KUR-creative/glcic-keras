@@ -23,8 +23,10 @@ def write_result_img(npy_path,img_path,
 
                 
 if __name__ == "__main__":
-    bat_size = 96
+    bat_size = 32#96
     img_size = 128
+    write_result_img('./output/I_O_GT__39.npy',
+                     './output/result39.png',bat_size,img_size)
     #for i in range(40,180+20,20):
     #for i in range(20,500,20):
     for i in range(0,18+1,2):
@@ -33,8 +35,6 @@ if __name__ == "__main__":
                          './output/result%d.png' % i,
                          bat_size,img_size,1)
         print(i)
-    write_result_img('./output/I_O_GT__499.npy',
-                     './output/result499.png',bat_size,img_size)
     '''
     #unittest.main()
     batch_size = 32
