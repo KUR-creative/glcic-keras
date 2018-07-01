@@ -26,7 +26,8 @@ if __name__ == "__main__":
     bat_size = 96
     img_size = 128
     #for i in range(40,180+20,20):
-    for i in range(20,500,20):
+    #for i in range(20,500,20):
+    for i in range(0,18+1,2):
     #for i in range(60,220+1,20):
         write_result_img('./output/I_O_GT__%d.npy' % i,
                          './output/result%d.png' % i,

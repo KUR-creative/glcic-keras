@@ -98,7 +98,17 @@ def train(DATASET_NAME, NUM_EPOCH, Tc, Td, SAVE_INTERVAL, MAILING_ENABLED,learne
         import mailing
         mailing.send_mail_to_kur(time_str)
 
-def continued_train(DATASET_NAME, Dnet_name, Cnet_name,NUM_EPOCH, Tc, Td, SAVE_INTERVAL, MAILING_ENABLED,learned_data_ratio):
+def continued_train(DATASET_NAME, Cnet_path, Dnet_path,
+                    NUM_EPOCH, Tc, Td, now_epoch,
+                    SAVE_INTERVAL, MAILING_ENABLED,learned_data_ratio):
+    Cmodel, Dmodel, CDmodel = init_models(Cnet_path, Dnet_path)
+    ''' model sanity checking
+    from keras.utils import plot_model
+    Cmodel.summary(); Dmodel.summary(); CDmodel.summary();
+    plot_model(Cmodel, to_file='Cmodel.png', show_shapes=True)
+    plot_model(Dmodel, to_file='Dmodel.png', show_shapes=True)
+    plot_model(CDmodel, to_file='CDmodel.png', show_shapes=True)
+    '''
     data_file = h5py.File(DATASET_NAME,'r') 
     #-------------------------------------------------------------------------------
     data_arr = data_file['images'] # already preprocessed, float32.
@@ -110,7 +120,7 @@ def continued_train(DATASET_NAME, Dnet_name, Cnet_name,NUM_EPOCH, Tc, Td, SAVE_I
 
     timer = ElapsedTimer('Total Training')
     #-------------------------------------------------------------------------------
-    for epoch in tqdm(range(NUM_EPOCH)):
+    for epoch in tqdm(range(now_epoch,NUM_EPOCH)):
         #epoch_timer = ElapsedTimer()
         #--------------------------------------------------------------------------
         for batch in gen_batch(data_arr, BATCH_SIZE, IMG_SHAPE, LD_CROP_SIZE,

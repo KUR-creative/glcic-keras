@@ -55,7 +55,8 @@ def set_global_consts(batch_size, img_size,
     D_MODEL_LR = d_model_lr
 
 
-def init_models():
+def init_models(Cnet_path=None, Dnet_path=None):
+    assert ((Cnet_path == None) ^ (Dnet_path == None)) is False
     #----------------------------- completion_model ----------------------------
     holed_origins_inp = Input(shape=IMG_SHAPE, name='holed_origins_inp')
     complnet_inp = Input(shape=IMG_SHAPE, name='complnet_inp')
@@ -67,7 +68,12 @@ def init_models():
                                      masks_inp])])
     compl_model = Model([holed_origins_inp, complnet_inp, masks_inp], 
                         merged_out)
+    if Cnet_path: 
+        compl_model.load_weights(Cnet_path, by_name=True)
     compl_model.compile(loss='mse', optimizer=Adadelta())
+
+    compl_model.summary()
+    plot_model(compl_model, to_file='C_model.png', show_shapes=True)
 
     #--------------------------- discrimination_model --------------------------
     origins_inp = Input(shape=IMG_SHAPE, name='origins_inp')
@@ -77,14 +83,16 @@ def init_models():
                           output_shape=MASK_SHAPE, name='local_crop')
     discrim_out = discrimination_net(IMG_SHAPE, LD_CROP_SHAPE)([origins_inp, 
                                                                 local_cropped])
-    discrim_model = Model([origins_inp,crop_yxhw_inp], 
-                          discrim_out)
+    discrim_model = Model([origins_inp,crop_yxhw_inp], discrim_out)
+    if Dnet_path: 
+        discrim_model.load_weights(Dnet_path, by_name=True)
     discrim_model.compile(loss='binary_crossentropy', 
                           optimizer=Adadelta(lr=D_MODEL_LR)) # good? lol
                           #optimizer=Adam(lr=0.000001))
-    #discrim_model.summary()
-    #plot_model(discrim_model, to_file='D_model.png', show_shapes=True)
-                          
+
+    discrim_model.summary()
+    plot_model(discrim_model, to_file='D_model.png', show_shapes=True)
+
     #------------------------------- joint_model -------------------------------
     d_container = Container([origins_inp,crop_yxhw_inp], 
                             discrim_out, name='D_container')
@@ -96,7 +104,7 @@ def init_models():
     joint_model.compile(loss=['mse', 'binary_crossentropy'],
                         loss_weights=[1.0, ALPHA], optimizer=Adadelta())
 
-    #joint_model.summary()
-    #plot_model(joint_model, to_file='joint_model.png', show_shapes=True)
+    joint_model.summary()
+    plot_model(joint_model, to_file='joint_model.png', show_shapes=True)
     return compl_model, discrim_model, joint_model
 
