@@ -106,6 +106,5 @@ def init_models(Cnet_path=None, Dnet_path=None):
 
     #joint_model.summary()
     #plot_model(joint_model, to_file='joint_model.png', show_shapes=True)
-
     return compl_model, discrim_model, joint_model
 

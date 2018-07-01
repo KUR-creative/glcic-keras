@@ -23,10 +23,10 @@ def write_result_img(npy_path,img_path,
 
                 
 if __name__ == "__main__":
-    bat_size = 32#96
+    bat_size = 64#32#96
     img_size = 128
-    write_result_img('./output/I_O_GT__39.npy',
-                     './output/result39.png',bat_size,img_size)
+    write_result_img('./output/I_O_GT__19.npy',
+                     './output/result19.png',bat_size,img_size)
     #for i in range(40,180+20,20):
     #for i in range(20,500,20):
     for i in range(0,18+1,2):
