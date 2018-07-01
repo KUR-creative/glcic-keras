@@ -72,8 +72,8 @@ def init_models(Cnet_path=None, Dnet_path=None):
         compl_model.load_weights(Cnet_path, by_name=True)
     compl_model.compile(loss='mse', optimizer=Adadelta())
 
-    compl_model.summary()
-    plot_model(compl_model, to_file='C_model.png', show_shapes=True)
+    #compl_model.summary()
+    #plot_model(compl_model, to_file='C_model.png', show_shapes=True)
 
     #--------------------------- discrimination_model --------------------------
     origins_inp = Input(shape=IMG_SHAPE, name='origins_inp')
@@ -90,8 +90,8 @@ def init_models(Cnet_path=None, Dnet_path=None):
                           optimizer=Adadelta(lr=D_MODEL_LR)) # good? lol
                           #optimizer=Adam(lr=0.000001))
 
-    discrim_model.summary()
-    plot_model(discrim_model, to_file='D_model.png', show_shapes=True)
+    #discrim_model.summary()
+    #plot_model(discrim_model, to_file='D_model.png', show_shapes=True)
 
     #------------------------------- joint_model -------------------------------
     d_container = Container([origins_inp,crop_yxhw_inp], 
@@ -104,7 +104,8 @@ def init_models(Cnet_path=None, Dnet_path=None):
     joint_model.compile(loss=['mse', 'binary_crossentropy'],
                         loss_weights=[1.0, ALPHA], optimizer=Adadelta())
 
-    joint_model.summary()
-    plot_model(joint_model, to_file='joint_model.png', show_shapes=True)
+    #joint_model.summary()
+    #plot_model(joint_model, to_file='joint_model.png', show_shapes=True)
+
     return compl_model, discrim_model, joint_model
 
