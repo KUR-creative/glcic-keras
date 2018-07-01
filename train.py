@@ -46,19 +46,18 @@ def save(Cmodel,Dmodel,batch, period,epoch,num_epoch, result_dir):
 
 
 from tqdm import tqdm
-def train(DATASET_NAME, 
-          NUM_EPOCH, Tc, Td, 
+def train(DATASET_NAME, NUM_EPOCH,Tc,Td, 
           SAVE_INTERVAL, MAILING_ENABLED, learned_data_ratio,
           now_epoch=0, Cmodel=None, Dmodel=None, CDmodel=None):
     if (Cmodel is None) and (Dmodel is None) and (CDmodel is None):
         Cmodel, Dmodel, CDmodel = init_models()
     ''' model sanity checking
-    '''
     from keras.utils import plot_model
     Cmodel.summary(); Dmodel.summary(); CDmodel.summary();
     plot_model(Cmodel, to_file='Cmodel.png', show_shapes=True)
     plot_model(Dmodel, to_file='Dmodel.png', show_shapes=True)
     plot_model(CDmodel, to_file='CDmodel.png', show_shapes=True)
+    '''
     data_file = h5py.File(DATASET_NAME,'r') 
     #-------------------------------------------------------------------------------
     data_arr = data_file['images'] # already preprocessed, float32.
@@ -105,8 +104,7 @@ def continued_train(DATASET_NAME, Cnet_path, Dnet_path,
                     NUM_EPOCH, Tc, Td, now_epoch,
                     SAVE_INTERVAL, MAILING_ENABLED, learned_data_ratio):
     Cmodel, Dmodel, CDmodel = init_models(Cnet_path, Dnet_path)
-    train(DATASET_NAME, 
-          NUM_EPOCH, Tc, Td, 
+    train(DATASET_NAME, NUM_EPOCH,Tc,Td, 
           SAVE_INTERVAL, MAILING_ENABLED, learned_data_ratio,
           now_epoch, Cmodel, Dmodel, CDmodel)
 
