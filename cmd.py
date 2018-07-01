@@ -57,6 +57,14 @@ parser.add_argument('-me', '--mailing_enabled',
     type=bool, default=False, nargs='?') 
     # False = (no -me) = disabled, None = -me = enabled.
 
+parser.add_argument('-C', '--c_model_path',
+    help='compl_model path to load', type=str)  
+parser.add_argument('-D', '--d_model_path',
+    help='discrim_model path to load', type=str)  
+parser.add_argument('-ce', '--current_epoch',
+    help='current epoch of loaded model. 0 <= ce',
+    type=int, default=0)
+
 args = parser.parse_args()
 
 if not (0.0 < args.ld_crop_size_proportion
@@ -93,6 +101,12 @@ if not (args.random_hole_min_proportion < args.random_hole_max_proportion):
 
 if not (args.tc_ratio + args.td_ratio < 1.0):
     parser.error('[require] tc_ratio + td_ratio < 1.0')
+
+if not (0 <= args.current_epoch): 
+    parser.error('[require] 0 <= current epoch of loaded model.')
+
+if ((args.c_model_path == None) ^ (args.d_model_path == None)):
+    parser.error('[require] Both C and D models are required. ')
 
 
 if __name__ == "__main__":
