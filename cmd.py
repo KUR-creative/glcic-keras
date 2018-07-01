@@ -155,7 +155,7 @@ if __name__ == "__main__":
           '       now epoch = %d \n' % args.current_epoch,
           '-----------------------------------\n',
           '        mailing? = %s \n' % ('disabled' if args.mailing_enabled == False else 'enabled'),
-          '====================================')
+          '====================================',flush=True)
 
     from train import train, continued_train
     if args.c_model_path and args.d_model_path:
