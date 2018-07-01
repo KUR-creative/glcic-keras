@@ -66,7 +66,7 @@ def padding_removed(padded_img,no_pad_shape):
     # TODO: 0~pH-dH is incorrect!
     return padded_img[0:pH-dH,0:pW-dW]
 
-img_no = '001'
+img_no = '005'
 origin, hw = load_image('./eval-data/mini_evals/'+img_no+'.jpg')
 mean_mask, not_mask = load_r_mask('./eval-data/mini_evals/'+img_no+'_mask.png',
                                   origin)
@@ -83,8 +83,9 @@ complnet_input = complnet_input[:,:,0]
 complnet_input = complnet_input.reshape((1,h,w,1))
 
 #compl_model = load_compl_model('./old_complnets/complnet_5.h5',
+compl_model = load_compl_model('./output/complnet_0.h5',
 #compl_model = load_compl_model('./old_complnets/complnet_499.h5',
-compl_model = load_compl_model('./old_complnets/complnet_9000.h5',
+#compl_model = load_compl_model('./old_complnets/complnet_9000.h5',
                                (None,None,1))
 complnet_output = compl_model.predict(
                     [complnet_input.reshape((1,h,w,1))]
@@ -140,3 +141,7 @@ print('mse =', result_mse)
 print('max mse =', max_mse)
 print('similarity = {:3f}%'.format((max_mse - result_mse) / max_mse * 100))
 print('error = {:3f}%'.format(100 - (max_mse - result_mse) / max_mse * 100) )
+
+from skimage.measure import compare_ssim
+ssim = compare_ssim(expected[:,:,0],actual[:,:,0]) # inputs must be 2D array!
+print('ssim = {}'.format(ssim))
