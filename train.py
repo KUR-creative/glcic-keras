@@ -72,7 +72,6 @@ def train(DATASET_NAME, NUM_EPOCH, Tc, Td, SAVE_INTERVAL, MAILING_ENABLED,learne
                 if epoch >= Tc + Td:
                     joint_loss,mse,gan = trainC_in(CDmodel, batch, epoch)
         #--------------------------------------------------------------------------
-
         if epoch < Tc:
             print('epoch {}: [C mse loss: {}]'.format(epoch, mse_loss), flush=True)#, end='')
         else:

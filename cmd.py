@@ -18,15 +18,15 @@ parser.add_argument('-i', '--img_size',
     type=int, required=True)  
 
 parser.add_argument('-l', '--ld_crop_size_proportion',
-    help='proportion of local discrimnator. 0 < L < 1',
-    type=float, required=True)  
+    help='proportion of local discrimnator,default:0.5 0 < L < 1',
+    type=float, default=0.5)  
 
-parser.add_argument('-m', '--random_hole_min_proportion',
-    help='minimum size proportion of random hole in local crop. 0 < m <= 1',
-    type=float, required=True)  
 parser.add_argument('-M', '--random_hole_max_proportion',
-    help='maximum size proportion of random hole in local crop. 0 < M <= 1',
-    type=float, required=True) 
+    help='maximum size proportion of random hole in local crop(default:1.0). 0 < M <= 1',
+    type=float, default=1.0) 
+parser.add_argument('-m', '--random_hole_min_proportion',
+    help='minimum size proportion of random hole in local crop(default:0.5). 0 < m <= 1',
+    type=float, default=0.5)  
 
 parser.add_argument('-a', '--alpha',
     help='joint model hyperparameter(default:0.0004). 0 < a < 1',
