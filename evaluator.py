@@ -140,20 +140,19 @@ class Test_adjusted_image(unittest.TestCase):
         
 
 def main():
-    img_no = '014'
-    mask_no = '011'
-    #mask_no = '014'
-    origin, hw = load_image('./eval-data/mini_evals/'+img_no+'.jpg')
-    mean_mask, not_mask = load_r_mask('./eval-data/mini_evals/'+mask_no+'_mask.png',
-                                      np.mean(origin))
+    origin_path = './eval-data/mini_evals/001_clean.png'
+    mask_path = './eval-data/mini_evals/008_mask.png'
+
+    origin, hw = load_image(origin_path)
+    mean_mask, not_mask = load_r_mask(mask_path, np.mean(origin))
     h,w = hw
     m_h, m_w = mean_mask.shape[:2]
     origin = origin[:,:,0].reshape((h,w,1)) # grayscale only!
     #cv2.imshow('mean mask',mean_mask); cv2.waitKey(0)
     #cv2.imshow('not mask',mean_mask); cv2.waitKey(0)
     mean_mask = adjusted_image( mean_mask.reshape([m_h,m_w,1]), (h,w,1) )
-    not_mask = adjusted_image( not_mask.reshape([m_h,m_w,1]), (h,w,1) )
-    cv2.imshow('not_mask',not_mask); cv2.waitKey(0)
+    not_mask = adjusted_image( not_mask.reshape([m_h,m_w,1]), (h,w,1), 1.0 )
+    #cv2.imshow('not_mask',not_mask); cv2.waitKey(0)
     #cv2.imshow('mean mask',mean_mask); cv2.waitKey(0)
     #cv2.imshow('not mask',mean_mask); cv2.waitKey(0)
 
@@ -166,8 +165,9 @@ def main():
     #compl_model = load_compl_model('./old_complnets/complnet_5.h5',
     #compl_model = load_compl_model('./output/complnet_0.h5',
     #compl_model = load_compl_model('./old_complnets/complnet_499.h5',
-    compl_model = load_compl_model('./old_complnets/complnet_9000.h5',
+    #compl_model = load_compl_model('./old_complnets/complnet_9000.h5',
     #compl_model = load_compl_model('./old_complnets/192x_200e_complnet_199.h5',
+    compl_model = load_compl_model('./old_complnets/192x_200e_complnet_190.h5',
                                    (None,None,1))
     complnet_output = compl_model.predict(
                         [complnet_input.reshape((1,h,w,1))]
@@ -177,9 +177,7 @@ def main():
                       )
     complnet_output = padding_removed(complnet_output, origin.shape)
 
-    cv2.imshow('not_mask',not_mask); cv2.waitKey(0)
     mask = np.logical_not(not_mask).astype(np.float32)
-    cv2.imshow('not_mask',not_mask); cv2.waitKey(0)
     completed = complnet_output * mask + holed_origin
 
 
@@ -187,8 +185,8 @@ def main():
     cv2.imshow('origin',origin); cv2.waitKey(0)#-----------------
     cv2.imshow('mean_mask',mean_mask); cv2.waitKey(0)
     cv2.imshow('not_mask',not_mask); cv2.waitKey(0)
-    cv2.imshow('mask',mask); cv2.waitKey(0)#---------------------
-    cv2.imshow('holed_origin',holed_origin); cv2.waitKey(0)
+    #cv2.imshow('mask',mask); cv2.waitKey(0)#---------------------
+    #cv2.imshow('holed_origin',holed_origin); cv2.waitKey(0)
     #cv2.imshow('complnet_input',complnet_input); cv2.waitKey(0)
     #cv2.imshow('complnet_output',complnet_output); cv2.waitKey(0)
     #completed = cv2.cvtColor(completed,cv2.COLOR_RGB2BGR)
@@ -196,12 +194,11 @@ def main():
 
     #print(origin.shape); #print(mask.shape); #print('is it ok?')
 
-    answer,_ = load_image('./eval-data/mini_evals/'+img_no+'_clean.png')
+    answer,_ = load_image(origin_path)
     cv2.imshow('answer',answer); cv2.waitKey(0)
     expected = answer * mask
 
-    max_err_img = cv2.imread('./eval-data/mini_evals/'+img_no+'_clean.png')
-
+    max_err_img = cv2.imread(origin_path)
     max_err_img = cv2.bitwise_not(max_err_img)
     #cv2.imshow('max error img',max_err_img); cv2.waitKey(0)
     #print(np.sum(max_err_img))
@@ -231,5 +228,5 @@ def main():
     print('full ssim = {}'.format(full_ssim))
 
 if __name__ == '__main__':
-    unittest.main()
-    #main()
+    #unittest.main()
+    main()
