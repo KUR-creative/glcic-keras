@@ -68,32 +68,31 @@ def padding_removed(padded_img,no_pad_shape):
 
 def adjusted_image(image, shape): # tested on only grayscale image.
     h,w,_ = image.shape
-    adjusted = image
 
-    d_h = shape[0] - image.shape[0] 
+    d_h = shape[0] - h
     if d_h > 0:
-        d_top = d_h // 2; d_bot = d_h - d_top
-        adjusted = np.pad(adjusted, [(d_top,d_bot), (0,0), (0,0)], 
-                          mode='constant')
-        #print('+ y',adjusted.shape)
+        d_top = d_h // 2
+        d_bot = d_h - d_top
+        image = np.pad(image, [(d_top,d_bot),(0,0),(0,0)], mode='constant')
+        #print('+ y',image.shape)
     else:
-        d_h = abs(d_h)
-        d_top = d_h // 2; d_bot = d_h - d_top
-        adjusted = adjusted[d_top:h-d_bot,:]
-        #print('- y',adjusted.shape)
+        d_top = abs(d_h) // 2
+        d_bot = abs(d_h) - d_top
+        image = image[d_top:h-d_bot,:]
+        #print('- y',image.shape)
 
-    d_w = shape[1] - image.shape[1]
+    d_w = shape[1] - w
     if d_w > 0:
-        d_left = d_w // 2; d_right = d_w - d_left
-        adjusted = np.pad(adjusted, [(0,0), (d_left,d_right), (0,0)], 
-                          mode='constant')
-        #print('+ x',adjusted.shape)
+        d_left = d_w // 2
+        d_right = d_w - d_left
+        image = np.pad(image, [(0,0),(d_left,d_right),(0,0)], mode='constant')
+        #print('+ x',image.shape)
     else:
-        d_w = abs(d_w)
-        d_left = d_w // 2; d_right = d_w - d_left
-        adjusted = adjusted[:,d_left:w-d_right]
-        #print('- x',adjusted.shape)
-    return adjusted
+        d_left = abs(d_w) // 2
+        d_right = abs(d_w) - d_left
+        image = image[:,d_left:w-d_right]
+        #print('- x',image.shape)
+    return image
 
 import unittest
 class Test_adjusted_image(unittest.TestCase):
