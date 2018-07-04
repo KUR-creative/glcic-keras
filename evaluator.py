@@ -66,82 +66,125 @@ def padding_removed(padded_img,no_pad_shape):
     # TODO: 0~pH-dH is incorrect!
     return padded_img[0:pH-dH,0:pW-dW]
 
-img_no = '005'
-origin, hw = load_image('./eval-data/mini_evals/'+img_no+'.jpg')
-mean_mask, not_mask = load_r_mask('./eval-data/mini_evals/'+img_no+'_mask.png',
-                                  origin)
-h,w = hw
-origin = origin[:,:,0].reshape((h,w,1)) # grayscale only!
-mean_mask = mean_mask.reshape((h,w,1))
-not_mask = not_mask.reshape((h,w,1))
-#print(mean_mask.shape, not_mask.shape)
+def adjusted_image(image, shape): # tested on only grayscale image.
+    d_h = shape[0] - image.shape[0] 
+    d_w = shape[1] - image.shape[1]
+    n_top = d_h // 2; n_bot = d_h - n_top
+    n_left = d_w // 2; n_right = d_w - n_left
+    adjusted = np.pad(image, 
+                      ((n_top,n_bot), (n_left,n_right), (0,0)), 
+                      mode='constant')
+    return adjusted
 
-holed_origin = origin * not_mask
-complnet_input = np.copy(holed_origin) + mean_mask
+import unittest
+class Test_adjusted_image(unittest.TestCase):
+    def test_identity_case(self):
+        shape = (100,100,1)
+        src = np.arange(10000,dtype=np.uint8).reshape(shape)
+        adjusted = adjusted_image(src,shape)
+        self.assertTrue( np.array_equal(adjusted,src) )
+        self.assertEqual( adjusted.shape, shape )
 
-complnet_input = complnet_input[:,:,0]
-complnet_input = complnet_input.reshape((1,h,w,1))
+    def test_padding_case(self):
+        # case y.
+        expected_shape = (200,200,1)
+        src = np.arange(10000,dtype=np.uint8).reshape((100,100,1))
+        adjusted = adjusted_image(src,expected_shape)
+        #self.assertTrue( np.array_equal(adjusted,src) )
+        self.assertEqual( adjusted.shape, expected_shape )
+        #cv2.imshow('src',src); cv2.waitKey(0)
+        #cv2.imshow('adjusted',adjusted); cv2.waitKey(0)
 
-#compl_model = load_compl_model('./old_complnets/complnet_5.h5',
-compl_model = load_compl_model('./output/complnet_0.h5',
-#compl_model = load_compl_model('./old_complnets/complnet_499.h5',
-#compl_model = load_compl_model('./old_complnets/complnet_9000.h5',
-                               (None,None,1))
-complnet_output = compl_model.predict(
-                    [complnet_input.reshape((1,h,w,1))]
-                  )
-complnet_output = complnet_output.reshape(
-                    complnet_output.shape[1:]
-                  )
-complnet_output = padding_removed(complnet_output, origin.shape)
+        expected_shape = (100,200,1)
+        src = np.arange(10000,dtype=np.uint8).reshape((100,100,1))
+        adjusted = adjusted_image(src,expected_shape)
+        #self.assertTrue( np.array_equal(adjusted,src) )
+        self.assertEqual( adjusted.shape, expected_shape )
+        #cv2.imshow('src',src); cv2.waitKey(0)
+        #cv2.imshow('adjusted',adjusted); cv2.waitKey(0)
 
-mask = np.logical_not(not_mask).astype(np.float32)
-completed = complnet_output * mask + holed_origin
+def main():
+    img_no = '011'
+    origin, hw = load_image('./eval-data/mini_evals/'+img_no+'.jpg')
+    mean_mask, not_mask = load_r_mask('./eval-data/mini_evals/'+img_no+'_mask.png',
+                                      origin)
+    h,w = hw
+    origin = origin[:,:,0].reshape((h,w,1)) # grayscale only!
+    mean_mask = mean_mask.reshape((h,w,1))
+    not_mask = not_mask.reshape((h,w,1))
+    #print(mean_mask.shape, not_mask.shape)
+
+    holed_origin = origin * not_mask
+    complnet_input = np.copy(holed_origin) + mean_mask
+
+    complnet_input = complnet_input[:,:,0]
+    complnet_input = complnet_input.reshape((1,h,w,1))
+
+    #compl_model = load_compl_model('./old_complnets/complnet_5.h5',
+    #compl_model = load_compl_model('./output/complnet_0.h5',
+    #compl_model = load_compl_model('./old_complnets/complnet_499.h5',
+    compl_model = load_compl_model('./old_complnets/complnet_9000.h5',
+    #compl_model = load_compl_model('./old_complnets/192x_200e_complnet_199.h5',
+                                   (None,None,1))
+    complnet_output = compl_model.predict(
+                        [complnet_input.reshape((1,h,w,1))]
+                      )
+    complnet_output = complnet_output.reshape(
+                        complnet_output.shape[1:]
+                      )
+    complnet_output = padding_removed(complnet_output, origin.shape)
+
+    mask = np.logical_not(not_mask).astype(np.float32)
+    completed = complnet_output * mask + holed_origin
 
 
-#bgr_origin = cv2.cvtColor(origin,cv2.COLOR_RGB2BGR)
-cv2.imshow('origin',origin); cv2.waitKey(0)#-----------------
-#cv2.imshow('mean_mask',mean_mask); cv2.waitKey(0)
-#cv2.imshow('not_mask',not_mask); cv2.waitKey(0)
-cv2.imshow('mask',mask); cv2.waitKey(0)#---------------------
-#cv2.imshow('holed_origin',holed_origin); cv2.waitKey(0)
-#cv2.imshow('complnet_input',complnet_input); cv2.waitKey(0)
-#cv2.imshow('complnet_output',complnet_output); cv2.waitKey(0)
-#completed = cv2.cvtColor(completed,cv2.COLOR_RGB2BGR)
-cv2.imshow('completed',completed); cv2.waitKey(0)#-----------
+    #bgr_origin = cv2.cvtColor(origin,cv2.COLOR_RGB2BGR)
+    cv2.imshow('origin',origin); cv2.waitKey(0)#-----------------
+    #cv2.imshow('mean_mask',mean_mask); cv2.waitKey(0)
+    #cv2.imshow('not_mask',not_mask); cv2.waitKey(0)
+    cv2.imshow('mask',mask); cv2.waitKey(0)#---------------------
+    #cv2.imshow('holed_origin',holed_origin); cv2.waitKey(0)
+    #cv2.imshow('complnet_input',complnet_input); cv2.waitKey(0)
+    #cv2.imshow('complnet_output',complnet_output); cv2.waitKey(0)
+    #completed = cv2.cvtColor(completed,cv2.COLOR_RGB2BGR)
+    cv2.imshow('completed',completed); cv2.waitKey(0)#-----------
 
-print(origin.shape)
-print(mask.shape)
-print('is it ok?')
+    #print(origin.shape); #print(mask.shape); #print('is it ok?')
 
-expected,_ = load_image('./eval-data/mini_evals/'+img_no+'_clean.png')
-cv2.imshow('expected',expected); cv2.waitKey(0)
-expected = expected * mask
+    answer,_ = load_image('./eval-data/mini_evals/'+img_no+'_clean.png')
+    cv2.imshow('answer',answer); cv2.waitKey(0)
+    expected = answer * mask
 
-max_err_img = cv2.imread('./eval-data/mini_evals/'+img_no+'_clean.png')
+    max_err_img = cv2.imread('./eval-data/mini_evals/'+img_no+'_clean.png')
 
-max_err_img = cv2.bitwise_not(max_err_img)
-cv2.imshow('max error img',max_err_img); cv2.waitKey(0)
-print(np.sum(max_err_img))
+    max_err_img = cv2.bitwise_not(max_err_img)
+    #cv2.imshow('max error img',max_err_img); cv2.waitKey(0)
+    #print(np.sum(max_err_img))
 
-max_err_img = (max_err_img.astype(np.float32) / 255) * mask
-cv2.imshow('masked max error img',max_err_img); cv2.waitKey(0)
-print(np.sum(max_err_img))
-#print(answer.shape)
-#max_err_img = cv2.bitwise_not(answer.astype()).astype(np.float32) * mask
-actual = completed * mask
+    max_err_img = (max_err_img.astype(np.float32) / 255) * mask
+    #cv2.imshow('masked max error img',max_err_img); cv2.waitKey(0)
+    #print(np.sum(max_err_img))
+    #print(answer.shape)
+    #max_err_img = cv2.bitwise_not(answer.astype()).astype(np.float32) * mask
+    actual = completed * mask
 
-#cv2.imshow('expected',expected); cv2.waitKey(0)
-#cv2.imshow('actual',actual); cv2.waitKey(0)
-#cv2.imshow('max error img',max_err_img); cv2.waitKey(0)
+    #cv2.imshow('expected',expected); cv2.waitKey(0)
+    #cv2.imshow('actual',actual); cv2.waitKey(0)
+    #cv2.imshow('max error img',max_err_img); cv2.waitKey(0)
 
-result_mse = mse(expected,actual)
-max_mse = mse(expected,max_err_img)
-print('mse =', result_mse)
-print('max mse =', max_mse)
-print('similarity = {:3f}%'.format((max_mse - result_mse) / max_mse * 100))
-print('error = {:3f}%'.format(100 - (max_mse - result_mse) / max_mse * 100) )
+    result_mse = mse(expected,actual)
+    max_mse = mse(expected,max_err_img)
+    print('mse =', result_mse)
+    print('max mse =', max_mse)
+    print('similarity = {:3f}%'.format((max_mse - result_mse) / max_mse * 100))
+    print('error = {:3f}%'.format(100 - (max_mse - result_mse) / max_mse * 100) )
 
-from skimage.measure import compare_ssim
-ssim = compare_ssim(expected[:,:,0],actual[:,:,0]) # inputs must be 2D array!
-print('ssim = {}'.format(ssim))
+    from skimage.measure import compare_ssim
+    masked_ssim = compare_ssim(expected[:,:,0],actual[:,:,0]) # inputs must be 2D array!
+    print('masked ssim = {}'.format(masked_ssim))
+    full_ssim = compare_ssim(answer[:,:,0],completed[:,:,0]) # inputs must be 2D array!
+    print('full ssim = {}'.format(full_ssim))
+
+if __name__ == '__main__':
+    unittest.main()
+    #main()
