@@ -79,14 +79,23 @@ def adjusted_image(image, shape): # tested on only grayscale image.
     d_h = abs(d_h)
     d_w = abs(d_w)
     d_top = d_h // 2; d_bot = d_h - d_top
-    print(d_top,d_bot)
+    #print(d_top,d_bot)
     d_left = d_w // 2; d_right = d_w - d_left
-    print(d_left,d_right)
+    #print(d_left,d_right)
     return image[d_top:h-d_bot, d_left:w-d_right]
     #return adjusted
 
 import unittest
 class Test_adjusted_image(unittest.TestCase):
+    def assert_adjustment(self, src_shape, expected_shape, visual_check=False):
+        h,w,_ = src_shape
+        src = np.arange(h*w, dtype=np.uint8).reshape(src_shape)
+        adjusted = adjusted_image(src, expected_shape)
+        self.assertEqual(adjusted.shape, expected_shape)
+        if visual_check:
+            cv2.imshow('src', src); cv2.waitKey(0)
+            cv2.imshow('adjusted', adjusted); cv2.waitKey(0)
+
     def test_identity_case(self):
         shape = (100,100,1)
         src = np.arange(10000,dtype=np.uint8).reshape((100,100,1))
@@ -95,54 +104,14 @@ class Test_adjusted_image(unittest.TestCase):
         self.assertEqual( adjusted.shape, shape )
 
     def test_padding_case(self):
-        # case y.
-        expected_shape = (200,100,1)
-        src = np.arange(10000,dtype=np.uint8).reshape((100,100,1))
-        adjusted = adjusted_image(src,expected_shape)
-        self.assertEqual( adjusted.shape, expected_shape )
-        #cv2.imshow('src',src); cv2.waitKey(0)
-        #cv2.imshow('adjusted',adjusted); cv2.waitKey(0)
-
-        # case x.
-        expected_shape = (100,200,1)
-        src = np.arange(10000,dtype=np.uint8).reshape((100,100,1))
-        adjusted = adjusted_image(src,expected_shape)
-        self.assertEqual( adjusted.shape, expected_shape )
-        #cv2.imshow('src',src); cv2.waitKey(0)
-        #cv2.imshow('adjusted',adjusted); cv2.waitKey(0)
-
-        # case xy.
-        expected_shape = (200,200,1)
-        src = np.arange(10000,dtype=np.uint8).reshape((100,100,1))
-        adjusted = adjusted_image(src,expected_shape)
-        self.assertEqual( adjusted.shape, expected_shape )
-        #cv2.imshow('src',src); cv2.waitKey(0)
-        #cv2.imshow('adjusted',adjusted); cv2.waitKey(0)
+        self.assert_adjustment( (200,100,1),(100,100,1) ) # case y.
+        self.assert_adjustment( (100,200,1),(100,100,1) ) # case x.
+        self.assert_adjustment( (200,200,1),(100,100,1) ) # case yx.
 
     def test_shrinking_case(self):
-        # case x.
-        expected_shape = (200,100,1)
-        src = np.arange(40000,dtype=np.uint8).reshape((200,200,1))
-        adjusted = adjusted_image(src,expected_shape)
-        self.assertEqual( adjusted.shape, expected_shape )
-        #cv2.imshow('src',src); cv2.waitKey(0)
-        #cv2.imshow('adjusted',adjusted); cv2.waitKey(0)
-
-        # case y.
-        expected_shape = (100,200,1)
-        src = np.arange(40000,dtype=np.uint8).reshape((200,200,1))
-        adjusted = adjusted_image(src,expected_shape)
-        self.assertEqual( adjusted.shape, expected_shape )
-        #cv2.imshow('src',src); cv2.waitKey(0)
-        #cv2.imshow('adjusted',adjusted); cv2.waitKey(0)
-
-        # case xy.
-        expected_shape = (100,100,1)
-        src = np.arange(40000,dtype=np.uint8).reshape((200,200,1))
-        adjusted = adjusted_image(src,expected_shape)
-        self.assertEqual( adjusted.shape, expected_shape )
-        cv2.imshow('src',src); cv2.waitKey(0)
-        cv2.imshow('adjusted',adjusted); cv2.waitKey(0)
+        self.assert_adjustment( (100,200,1),(200,200,1) ) # case y.
+        self.assert_adjustment( (200,100,1),(200,200,1) ) # case x.
+        self.assert_adjustment( (100,100,1),(200,200,1) ) # case yx.
 
 def main():
     img_no = '011'
