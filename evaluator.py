@@ -66,14 +66,15 @@ def padding_removed(padded_img,no_pad_shape):
     # TODO: 0~pH-dH is incorrect!
     return padded_img[0:pH-dH,0:pW-dW]
 
-def adjusted_image(image, shape): # tested on only grayscale image.
+def adjusted_image(image, shape, pad_value=0): # tested on only grayscale image.
     h,w,_ = image.shape
 
     d_h = shape[0] - h
     if d_h > 0:
         d_top = d_h // 2
         d_bot = d_h - d_top
-        image = np.pad(image, [(d_top,d_bot),(0,0),(0,0)], mode='constant')
+        image = np.pad(image, [(d_top,d_bot),(0,0),(0,0)], 
+                       mode='constant', constant_values=pad_value)
         #print('+ y',image.shape)
     else:
         d_top = abs(d_h) // 2
@@ -85,7 +86,8 @@ def adjusted_image(image, shape): # tested on only grayscale image.
     if d_w > 0:
         d_left = d_w // 2
         d_right = d_w - d_left
-        image = np.pad(image, [(0,0),(d_left,d_right),(0,0)], mode='constant')
+        image = np.pad(image, [(0,0),(d_left,d_right),(0,0)],
+                       mode='constant', constant_values=pad_value)
         #print('+ x',image.shape)
     else:
         d_left = abs(d_w) // 2
@@ -129,19 +131,31 @@ class Test_adjusted_image(unittest.TestCase):
         self.assert_adjustment( (100,200,1),(200,100,1) ) # (+,-)
         self.assert_adjustment( (200,100,1),(100,200,1) ) # (-,+)
 
+    def test_pad_val(self):
+        shape = (200,200,1)
+        src = np.zeros(10000,dtype=np.float32).reshape((100,100,1))
+        adjusted = adjusted_image(src,shape,1)
+        self.assertNotEqual( np.sum(src), np.sum(adjusted) )
+        self.assertEqual( adjusted.shape, shape )  
+        
 
 def main():
     img_no = '014'
-    #mask_no = '011'
-    mask_no = '014'
+    mask_no = '011'
+    #mask_no = '014'
     origin, hw = load_image('./eval-data/mini_evals/'+img_no+'.jpg')
     mean_mask, not_mask = load_r_mask('./eval-data/mini_evals/'+mask_no+'_mask.png',
                                       np.mean(origin))
     h,w = hw
+    m_h, m_w = mean_mask.shape[:2]
     origin = origin[:,:,0].reshape((h,w,1)) # grayscale only!
-    mean_mask = mean_mask.reshape((h,w,1))
-    not_mask = not_mask.reshape((h,w,1))
-    #print(mean_mask.shape, not_mask.shape)
+    #cv2.imshow('mean mask',mean_mask); cv2.waitKey(0)
+    #cv2.imshow('not mask',mean_mask); cv2.waitKey(0)
+    mean_mask = adjusted_image( mean_mask.reshape([m_h,m_w,1]), (h,w,1) )
+    not_mask = adjusted_image( not_mask.reshape([m_h,m_w,1]), (h,w,1) )
+    cv2.imshow('not_mask',not_mask); cv2.waitKey(0)
+    #cv2.imshow('mean mask',mean_mask); cv2.waitKey(0)
+    #cv2.imshow('not mask',mean_mask); cv2.waitKey(0)
 
     holed_origin = origin * not_mask
     complnet_input = np.copy(holed_origin) + mean_mask
@@ -163,16 +177,18 @@ def main():
                       )
     complnet_output = padding_removed(complnet_output, origin.shape)
 
+    cv2.imshow('not_mask',not_mask); cv2.waitKey(0)
     mask = np.logical_not(not_mask).astype(np.float32)
+    cv2.imshow('not_mask',not_mask); cv2.waitKey(0)
     completed = complnet_output * mask + holed_origin
 
 
     #bgr_origin = cv2.cvtColor(origin,cv2.COLOR_RGB2BGR)
     cv2.imshow('origin',origin); cv2.waitKey(0)#-----------------
-    #cv2.imshow('mean_mask',mean_mask); cv2.waitKey(0)
-    #cv2.imshow('not_mask',not_mask); cv2.waitKey(0)
+    cv2.imshow('mean_mask',mean_mask); cv2.waitKey(0)
+    cv2.imshow('not_mask',not_mask); cv2.waitKey(0)
     cv2.imshow('mask',mask); cv2.waitKey(0)#---------------------
-    #cv2.imshow('holed_origin',holed_origin); cv2.waitKey(0)
+    cv2.imshow('holed_origin',holed_origin); cv2.waitKey(0)
     #cv2.imshow('complnet_input',complnet_input); cv2.waitKey(0)
     #cv2.imshow('complnet_output',complnet_output); cv2.waitKey(0)
     #completed = cv2.cvtColor(completed,cv2.COLOR_RGB2BGR)
@@ -215,5 +231,5 @@ def main():
     print('full ssim = {}'.format(full_ssim))
 
 if __name__ == '__main__':
-    #unittest.main()
-    main()
+    unittest.main()
+    #main()
