@@ -68,30 +68,40 @@ def padding_removed(padded_img,no_pad_shape):
 
 def adjusted_image(image, shape): # tested on only grayscale image.
     h,w,_ = image.shape
+    adjusted = image
+
     d_h = shape[0] - image.shape[0] 
-    d_w = shape[1] - image.shape[1]
-    if d_h >= 0 and d_w >= 0:
+    if d_h > 0:
         d_top = d_h // 2; d_bot = d_h - d_top
+        adjusted = np.pad(adjusted, [(d_top,d_bot), (0,0), (0,0)], 
+                          mode='constant')
+        #print('+ y',adjusted.shape)
+    else:
+        d_h = abs(d_h)
+        d_top = d_h // 2; d_bot = d_h - d_top
+        adjusted = adjusted[d_top:h-d_bot,:]
+        #print('- y',adjusted.shape)
+
+    d_w = shape[1] - image.shape[1]
+    if d_w > 0:
         d_left = d_w // 2; d_right = d_w - d_left
-        return np.pad(image, 
-                      ((d_top,d_bot), (d_left,d_right), (0,0)), 
-                      mode='constant')
-    d_h = abs(d_h)
-    d_w = abs(d_w)
-    d_top = d_h // 2; d_bot = d_h - d_top
-    #print(d_top,d_bot)
-    d_left = d_w // 2; d_right = d_w - d_left
-    #print(d_left,d_right)
-    return image[d_top:h-d_bot, d_left:w-d_right]
-    #return adjusted
+        adjusted = np.pad(adjusted, [(0,0), (d_left,d_right), (0,0)], 
+                          mode='constant')
+        #print('+ x',adjusted.shape)
+    else:
+        d_w = abs(d_w)
+        d_left = d_w // 2; d_right = d_w - d_left
+        adjusted = adjusted[:,d_left:w-d_right]
+        #print('- x',adjusted.shape)
+    return adjusted
 
 import unittest
 class Test_adjusted_image(unittest.TestCase):
-    def assert_adjustment(self, src_shape, expected_shape, visual_check=False):
+    def assert_adjustment(self, src_shape, dst_shape, visual_check=False):
         h,w,_ = src_shape
         src = np.arange(h*w, dtype=np.uint8).reshape(src_shape)
-        adjusted = adjusted_image(src, expected_shape)
-        self.assertEqual(adjusted.shape, expected_shape)
+        adjusted = adjusted_image(src, dst_shape)
+        self.assertEqual(adjusted.shape, dst_shape)
         if visual_check:
             cv2.imshow('src', src); cv2.waitKey(0)
             cv2.imshow('adjusted', adjusted); cv2.waitKey(0)
@@ -101,17 +111,25 @@ class Test_adjusted_image(unittest.TestCase):
         src = np.arange(10000,dtype=np.uint8).reshape((100,100,1))
         adjusted = adjusted_image(src,shape)
         self.assertTrue( np.array_equal(adjusted,src) )
-        self.assertEqual( adjusted.shape, shape )
-
-    def test_padding_case(self):
-        self.assert_adjustment( (200,100,1),(100,100,1) ) # case y.
-        self.assert_adjustment( (100,200,1),(100,100,1) ) # case x.
-        self.assert_adjustment( (200,200,1),(100,100,1) ) # case yx.
+        self.assertEqual( adjusted.shape, shape )         # (0,0)
 
     def test_shrinking_case(self):
-        self.assert_adjustment( (100,200,1),(200,200,1) ) # case y.
-        self.assert_adjustment( (200,100,1),(200,200,1) ) # case x.
-        self.assert_adjustment( (100,100,1),(200,200,1) ) # case yx.
+        print('---shrinking---')
+        self.assert_adjustment( (200,100,1),(100,100,1) ) # (-,0)
+        self.assert_adjustment( (100,200,1),(100,100,1) ) # (0,-)
+        self.assert_adjustment( (200,200,1),(100,100,1) ) # (-,-)
+
+    def test_padding_case(self):
+        print('---padding---')
+        self.assert_adjustment( (100,200,1),(200,200,1) ) # (+,0)
+        self.assert_adjustment( (200,100,1),(200,200,1) ) # (0,+)
+        print('---- now! ----')
+        self.assert_adjustment( (100,100,1),(200,200,1) ) # (+,+)
+
+    def test_mixed_case(self):
+        self.assert_adjustment( (100,200,1),(200,100,1) ) # (+,-)
+        self.assert_adjustment( (200,100,1),(100,200,1) ) # (-,+)
+
 
 def main():
     img_no = '011'
