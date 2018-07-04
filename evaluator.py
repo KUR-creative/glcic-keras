@@ -43,7 +43,7 @@ def mask_from_user(mask_hw, origin):
     return mean_mask, np.logical_not(mean_mask).astype(np.float32)
 
 kernel = np.ones((1,1),np.uint8)
-def load_r_mask(imgpath, origin):
+def load_r_mask(imgpath, origin_mean_pixel_value):
     mask, hw = load_image(imgpath)
 
     mask = (mask[:,:,0] > 0.1).astype(np.uint8)#.astype(np.float32)
@@ -52,7 +52,7 @@ def load_r_mask(imgpath, origin):
     #cv2.imshow('mask',mask.astype(np.float32)); cv2.waitKey(0)
     mask = mask.astype(np.float32)
 
-    mean_mask = mask * np.mean(origin) # images 2
+    mean_mask = mask * origin_mean_pixel_value # images 2
     #cv2.imshow('mask',mask); cv2.waitKey(0)
     #cv2.imshow('mean mask',mean_mask); cv2.waitKey(0)
     return mean_mask, np.logical_not(mean_mask).astype(np.float32)
@@ -131,10 +131,12 @@ class Test_adjusted_image(unittest.TestCase):
 
 
 def main():
-    img_no = '011'
+    img_no = '014'
+    #mask_no = '011'
+    mask_no = '014'
     origin, hw = load_image('./eval-data/mini_evals/'+img_no+'.jpg')
-    mean_mask, not_mask = load_r_mask('./eval-data/mini_evals/'+img_no+'_mask.png',
-                                      origin)
+    mean_mask, not_mask = load_r_mask('./eval-data/mini_evals/'+mask_no+'_mask.png',
+                                      np.mean(origin))
     h,w = hw
     origin = origin[:,:,0].reshape((h,w,1)) # grayscale only!
     mean_mask = mean_mask.reshape((h,w,1))
@@ -213,5 +215,5 @@ def main():
     print('full ssim = {}'.format(full_ssim))
 
 if __name__ == '__main__':
-    unittest.main()
-    #main()
+    #unittest.main()
+    main()
