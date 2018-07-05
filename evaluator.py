@@ -43,10 +43,11 @@ def mask_from_user(mask_hw, origin):
     return mean_mask, np.logical_not(mean_mask).astype(np.float32)
 
 kernel = np.ones((1,1),np.uint8)
-def load_r_mask(imgpath, origin_mean_pixel_value):
+def load_mask(imgpath, origin_mean_pixel_value, 
+              mask_channel=0, threshold=0.1):
     mask, hw = load_image(imgpath)
 
-    mask = (mask[:,:,0] > 0.1).astype(np.uint8)#.astype(np.float32)
+    mask = (mask[:,:,mask_channel] > threshold).astype(np.uint8)#.astype(np.float32)
     #cv2.imshow('mask',mask.astype(np.float32)); cv2.waitKey(0)
     mask = cv2.dilate(mask,kernel,iterations=1)
     #cv2.imshow('mask',mask.astype(np.float32)); cv2.waitKey(0)
@@ -144,7 +145,7 @@ def main():
     mask_path = './eval-data/mini_evals/008_mask.png'
 
     origin, hw = load_image(origin_path)
-    mean_mask, not_mask = load_r_mask(mask_path, np.mean(origin))
+    mean_mask, not_mask = load_mask(mask_path, np.mean(origin))
     h,w = hw
     m_h, m_w = mean_mask.shape[:2]
     origin = origin[:,:,0].reshape((h,w,1)) # grayscale only!
