@@ -28,11 +28,11 @@ def load_compl_model(model_path, img_shape=(None,None,3)):
     '''
     return compl_model
 
-def load_image(img_path):
-    origin = cv2.imread(img_path)
+def load_image(imgpath):
+    origin = cv2.imread(imgpath)
     origin = cv2.cvtColor(origin,cv2.COLOR_BGR2RGB)
     origin = origin.astype(np.float32) / 255
-    return origin, origin.shape[:2]
+    return origin
 
 def mask_from_user(mask_hw, origin):
     h,w = mask_hw
@@ -45,7 +45,7 @@ def mask_from_user(mask_hw, origin):
 kernel = np.ones((1,1),np.uint8)
 def load_mask(imgpath, origin_mean_pixel_value, 
               mask_channel=0, threshold=0.1):
-    mask, hw = load_image(imgpath)
+    mask = load_image(imgpath)
 
     mask = (mask[:,:,mask_channel] > threshold).astype(np.uint8)#.astype(np.float32)
     #cv2.imshow('mask',mask.astype(np.float32)); cv2.waitKey(0)
@@ -144,9 +144,9 @@ def main():
     origin_path = './eval-data/mini_evals/001_clean.png'
     mask_path = './eval-data/mini_evals/008_mask.png'
 
-    origin, hw = load_image(origin_path)
+    origin = load_image(origin_path)
     mean_mask, not_mask = load_mask(mask_path, np.mean(origin))
-    h,w = hw
+    h,w = origin.shape[:2]
     m_h, m_w = mean_mask.shape[:2]
     origin = origin[:,:,0].reshape((h,w,1)) # grayscale only!
     #cv2.imshow('mean mask',mean_mask); cv2.waitKey(0)
@@ -195,7 +195,7 @@ def main():
 
     #print(origin.shape); #print(mask.shape); #print('is it ok?')
 
-    answer,_ = load_image(origin_path)
+    answer = load_image(origin_path) # answer
     cv2.imshow('answer',answer); cv2.waitKey(0)
     expected = answer * mask
 
