@@ -183,36 +183,24 @@ def scores(compl_model, origin, mean_mask, not_mask, answer):
     masked_completed = completed * mask
     masked_answer = answer * mask
     masked_max_err_img = normalized(max_err_img) * mask
-    #-------------------------------------------------------------
-    #bgr_origin = cv2.cvtColor(origin,cv2.COLOR_RGB2BGR)
-    cv2.imshow('origin',origin); cv2.waitKey(0)#-----------------
-    cv2.imshow('mean_mask',mean_mask); cv2.waitKey(0)
-    cv2.imshow('not_mask',not_mask); cv2.waitKey(0)
-    #cv2.imshow('mask',mask); cv2.waitKey(0)#---------------------
-    #cv2.imshow('holed_origin',holed_origin); cv2.waitKey(0)
-    #cv2.imshow('complnet_input',complnet_input); cv2.waitKey(0)
-    #cv2.imshow('complnet_output',complnet_output); cv2.waitKey(0)
-    #completed = cv2.cvtColor(completed,cv2.COLOR_RGB2BGR)
-    cv2.imshow('completed',completed); cv2.waitKey(0)#-----------
-    #print(origin.shape); #print(mask.shape); #print('is it ok?')
-    cv2.imshow('answer',answer); cv2.waitKey(0)
-    cv2.imshow('max error img',max_err_img); cv2.waitKey(0)
-    #cv2.imshow('masked_answer',masked_answer); cv2.waitKey(0)
-    #cv2.imshow('masked_completed',masked_completed); cv2.waitKey(0)
-    #cv2.imshow('max error img',max_err_img); cv2.waitKey(0)
-    #-------------------------------------------------------------
 
     similarity = mse_ratio_similarity(masked_completed, masked_answer, 
                                       masked_max_err_img)
     error = 1 - similarity
     masked_ssim = compare_ssim(masked_answer[:,:,0],masked_completed[:,:,0]) # inputs must be 2D array!
     full_ssim = compare_ssim(answer[:,:,0],completed[:,:,0]) # inputs must be 2D array!
+    #-------------------------------------------------------------
+    cv2.imshow('origin',origin); cv2.waitKey(0)#-----------------
+    cv2.imshow('mean_mask',mean_mask); cv2.waitKey(0)
+    cv2.imshow('not_mask',not_mask); cv2.waitKey(0)
+    cv2.imshow('completed',completed); cv2.waitKey(0)#-----------
+    cv2.imshow('answer',answer); cv2.waitKey(0)
+    cv2.imshow('max error img',max_err_img); cv2.waitKey(0)
+    #-------------------------------------------------------------
     return similarity, error, masked_ssim, full_ssim
 
 
 def main():
-    # score: origin, mask, answer
-    # completed_image: model, origin, mask
     #-------------------------------------------------------------
     compl_model = load_compl_model('./old_complnets/complnet_5.h5',
     #compl_model = load_compl_model('./output/complnet_0.h5',
@@ -221,6 +209,8 @@ def main():
     #compl_model = load_compl_model('./old_complnets/192x_200e_complnet_199.h5',
     #compl_model = load_compl_model('./old_complnets/192x_200e_complnet_190.h5',
                                    (None,None,1))
+    #-------------------------------------------------------------
+
     #-------------------------------------------------------------
     origin_path = './eval-data/mini_evals/001_clean.png'
     mask_path = './eval-data/mini_evals/008_mask.png'
@@ -235,24 +225,16 @@ def main():
     mean_mask = adjusted_image( mean_mask.reshape([m_h,m_w,1]), (h,w,1) )
     not_mask = adjusted_image( not_mask.reshape([m_h,m_w,1]), (h,w,1), 1.0 )
     #-------------------------------------------------------------
-    #cv2.imshow('not_mask',not_mask); cv2.waitKey(0)
-    #cv2.imshow('mean mask',mean_mask); cv2.waitKey(0)
-    #cv2.imshow('not mask',mean_mask); cv2.waitKey(0)
-    '''
-    result_mse = mse(expected,actual)
-    max_mse = mse(expected,max_err_img)
-    print('mse =', result_mse)
-    print('max mse =', max_mse)
-    print('similarity = {:3f}%'.format((max_mse - result_mse) / max_mse * 100))
-    print('error = {:3f}%'.format(100 - (max_mse - result_mse) / max_mse * 100) )
-    '''
 
+    #-------------------------------------------------------------
     similarity, error, masked_ssim, full_ssim\
         = scores(compl_model, origin, mean_mask, not_mask, answer)
+    #-------------------------------------------------------------
     print('masked mse ratio similarity = {:3f}'.format(similarity))
     print('masked mse ratio error = {:3f}'.format(error))
     print('masked ssim = {}'.format(masked_ssim))
     print('full ssim = {}'.format(full_ssim))
+    #-------------------------------------------------------------
 
 if __name__ == '__main__':
     #unittest.main()
