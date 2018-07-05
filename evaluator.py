@@ -12,6 +12,7 @@ import cv2
 from keras.layers import Input, Add, Multiply, merge
 from keras.models import Model
 from keras.utils import plot_model
+from skimage.measure import compare_ssim
 
 def mse(A,B):
     return ((A-B)**2).mean()
@@ -172,36 +173,18 @@ class Test_adjusted_image(unittest.TestCase):
         self.assertNotEqual( np.sum(src), np.sum(adjusted) )
         self.assertEqual( adjusted.shape, shape )  
         
+def scores(compl_model, origin, mean_mask, not_mask, answer):
+    completed = completion(compl_model, origin, mean_mask, not_mask)
+    mask = np.logical_not(not_mask).astype(np.float32)
+    expected = answer * mask
 
-def main():
-    # score: origin, mask, answer
-    # completed_image: model, origin, mask
-    origin_path = './eval-data/mini_evals/001_clean.png'
-    mask_path = './eval-data/mini_evals/008_mask.png'
+    answer_uint8 = inverse_normalized(answer)
+    max_err_img = cv2.bitwise_not(answer_uint8)
+    cv2.imshow('max error img',max_err_img); cv2.waitKey(0)
 
-    origin = load_image(origin_path)
-    mean_mask, not_mask = load_mask_pair(mask_path, 
-                                         np.mean(origin))
-
-    h,w = origin.shape[:2]
-    m_h, m_w = mean_mask.shape[:2]
-    origin = origin[:,:,0].reshape((h,w,1)) # grayscale only!
-    mean_mask = adjusted_image( mean_mask.reshape([m_h,m_w,1]), (h,w,1) )
-    not_mask = adjusted_image( not_mask.reshape([m_h,m_w,1]), (h,w,1), 1.0 )
-    #cv2.imshow('not_mask',not_mask); cv2.waitKey(0)
-    #cv2.imshow('mean mask',mean_mask); cv2.waitKey(0)
-    #cv2.imshow('not mask',mean_mask); cv2.waitKey(0)
-
-    compl_model = load_compl_model('./old_complnets/complnet_5.h5',
-    #compl_model = load_compl_model('./output/complnet_0.h5',
-    #compl_model = load_compl_model('./old_complnets/complnet_499.h5',
-    #compl_model = load_compl_model('./old_complnets/complnet_9000.h5',
-    #compl_model = load_compl_model('./old_complnets/192x_200e_complnet_199.h5',
-    #compl_model = load_compl_model('./old_complnets/192x_200e_complnet_190.h5',
-                                   (None,None,1))
-    completed = completion(compl_model,
-                           origin, mean_mask, not_mask)
-
+    max_err_img = normalized(max_err_img) * mask
+    actual = completed * mask
+    #-------------------------------------------------------------
     #bgr_origin = cv2.cvtColor(origin,cv2.COLOR_RGB2BGR)
     cv2.imshow('origin',origin); cv2.waitKey(0)#-----------------
     cv2.imshow('mean_mask',mean_mask); cv2.waitKey(0)
@@ -212,30 +195,49 @@ def main():
     #cv2.imshow('complnet_output',complnet_output); cv2.waitKey(0)
     #completed = cv2.cvtColor(completed,cv2.COLOR_RGB2BGR)
     cv2.imshow('completed',completed); cv2.waitKey(0)#-----------
-
     #print(origin.shape); #print(mask.shape); #print('is it ok?')
-
-    answer = load_image(origin_path) # answer
     cv2.imshow('answer',answer); cv2.waitKey(0)
-    mask = np.logical_not(not_mask).astype(np.float32)
-    expected = answer * mask
-
-    answer_uint8 = inverse_normalized(answer)
-    max_err_img = cv2.bitwise_not(answer_uint8)
-    cv2.imshow('max error img',max_err_img); cv2.waitKey(0)
-    #print(np.sum(max_err_img))
-
-    max_err_img = normalized(max_err_img) * mask
-    #cv2.imshow('masked max error img',max_err_img); cv2.waitKey(0)
-    #print(np.sum(max_err_img))
-    #print(answer.shape)
-    #max_err_img = cv2.bitwise_not(answer.astype()).astype(np.float32) * mask
-    actual = completed * mask
-
     #cv2.imshow('expected',expected); cv2.waitKey(0)
     #cv2.imshow('actual',actual); cv2.waitKey(0)
     #cv2.imshow('max error img',max_err_img); cv2.waitKey(0)
+    #-------------------------------------------------------------
 
+    similarity = mse_ratio_similarity(actual, expected, max_err_img)
+    error = 1 - similarity
+    masked_ssim = compare_ssim(expected[:,:,0],actual[:,:,0]) # inputs must be 2D array!
+    full_ssim = compare_ssim(answer[:,:,0],completed[:,:,0]) # inputs must be 2D array!
+    return similarity, error, masked_ssim, full_ssim
+
+
+def main():
+    # score: origin, mask, answer
+    # completed_image: model, origin, mask
+    #-------------------------------------------------------------
+    origin_path = './eval-data/mini_evals/001_clean.png'
+    mask_path = './eval-data/mini_evals/008_mask.png'
+    #-------------------------------------------------------------
+    compl_model = load_compl_model('./old_complnets/complnet_5.h5',
+    #compl_model = load_compl_model('./output/complnet_0.h5',
+    #compl_model = load_compl_model('./old_complnets/complnet_499.h5',
+    #compl_model = load_compl_model('./old_complnets/complnet_9000.h5',
+    #compl_model = load_compl_model('./old_complnets/192x_200e_complnet_199.h5',
+    #compl_model = load_compl_model('./old_complnets/192x_200e_complnet_190.h5',
+                                   (None,None,1))
+    #-------------------------------------------------------------
+    origin = load_image(origin_path)
+    mean_mask, not_mask = load_mask_pair(mask_path, np.mean(origin))
+    answer = load_image(origin_path) # answer
+    #-------------------------------------------------------------
+    # extra preprocess
+    h,w = origin.shape[:2]
+    m_h, m_w = mean_mask.shape[:2]
+    origin = origin[:,:,0].reshape((h,w,1)) # grayscale only!
+    mean_mask = adjusted_image( mean_mask.reshape([m_h,m_w,1]), (h,w,1) )
+    not_mask = adjusted_image( not_mask.reshape([m_h,m_w,1]), (h,w,1), 1.0 )
+    #-------------------------------------------------------------
+    #cv2.imshow('not_mask',not_mask); cv2.waitKey(0)
+    #cv2.imshow('mean mask',mean_mask); cv2.waitKey(0)
+    #cv2.imshow('not mask',mean_mask); cv2.waitKey(0)
     '''
     result_mse = mse(expected,actual)
     max_mse = mse(expected,max_err_img)
@@ -244,14 +246,11 @@ def main():
     print('similarity = {:3f}%'.format((max_mse - result_mse) / max_mse * 100))
     print('error = {:3f}%'.format(100 - (max_mse - result_mse) / max_mse * 100) )
     '''
-    sim = mse_ratio_similarity(actual, expected, max_err_img)
-    err = 1 - sim
-    from skimage.measure import compare_ssim
-    masked_ssim = compare_ssim(expected[:,:,0],actual[:,:,0]) # inputs must be 2D array!
-    full_ssim = compare_ssim(answer[:,:,0],completed[:,:,0]) # inputs must be 2D array!
 
-    print('masked mse ratio similarity = {:3f}'.format(sim))
-    print('masked mse ratio error = {:3f}'.format(err))
+    similarity, error, masked_ssim, full_ssim\
+        = scores(compl_model, origin, mean_mask, not_mask, answer)
+    print('masked mse ratio similarity = {:3f}'.format(similarity))
+    print('masked mse ratio error = {:3f}'.format(error))
     print('masked ssim = {}'.format(masked_ssim))
     print('full ssim = {}'.format(full_ssim))
 
