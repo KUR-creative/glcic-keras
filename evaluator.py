@@ -15,6 +15,11 @@ from keras.utils import plot_model
 
 def mse(A,B):
     return ((A-B)**2).mean()
+def normalized(uint8img):
+    return uint8img.astype(np.float32) / 255
+def inverse_normalized(float32img):
+    return (float32img * 255).astype(np.uint8)
+
 def load_compl_model(model_path, img_shape=(None,None,3)):
     complnet_inp = Input(shape=img_shape, name='complnet_inp')
     complnet_out = completion_net(img_shape)(complnet_inp)
@@ -31,7 +36,7 @@ def load_compl_model(model_path, img_shape=(None,None,3)):
 def load_image(imgpath):
     origin = cv2.imread(imgpath)
     origin = cv2.cvtColor(origin,cv2.COLOR_BGR2RGB)
-    origin = origin.astype(np.float32) / 255
+    origin = normalized(origin)
     return origin
 
 def mask_from_user(mask_hw, origin):
@@ -216,12 +221,12 @@ def main():
     mask = np.logical_not(not_mask).astype(np.float32)
     expected = answer * mask
 
-    max_err_img = cv2.imread(origin_path)
-    max_err_img = cv2.bitwise_not(max_err_img)
-    #cv2.imshow('max error img',max_err_img); cv2.waitKey(0)
+    answer_uint8 = inverse_normalized(answer)
+    max_err_img = cv2.bitwise_not(answer_uint8)
+    cv2.imshow('max error img',max_err_img); cv2.waitKey(0)
     #print(np.sum(max_err_img))
 
-    max_err_img = (max_err_img.astype(np.float32) / 255) * mask
+    max_err_img = normalized(max_err_img) * mask
     #cv2.imshow('masked max error img',max_err_img); cv2.waitKey(0)
     #print(np.sum(max_err_img))
     #print(answer.shape)
