@@ -43,8 +43,19 @@ def mask_from_user(mask_hw, origin):
     return mean_mask, np.logical_not(mean_mask).astype(np.float32)
 
 kernel = np.ones((1,1),np.uint8)
-def load_mask(imgpath, origin_mean_pixel_value, 
-              mask_channel=0, threshold=0.1):
+def load_mask_pair(imgpath, origin_mean_pixel_value, 
+                   mask_channel=0, threshold=0.1):
+    '''
+    ex) ' ':hole, 'm':mean pixel value of origin
+        origin          mask         not_mask
+    12345678901234|              |11111111111111
+    923759 9237 22|      m    m  |111111 1111 11
+    93298  927  32|     mm   mm  |11111  111  11
+    2398       239|    mmmmmmm   |1111       111
+    2397492  49272|       mm     |1111111  11111
+    28394   347927|     mmm      |11111   111111
+    85729547328492|              |11111111111111
+    '''
     mask = load_image(imgpath)
 
     mask = (mask[:,:,mask_channel] > threshold).astype(np.uint8)#.astype(np.float32)
@@ -141,11 +152,15 @@ class Test_adjusted_image(unittest.TestCase):
         
 
 def main():
+    # score: origin, mask, answer
+    # completed_image: model, origin, mask
     origin_path = './eval-data/mini_evals/001_clean.png'
     mask_path = './eval-data/mini_evals/008_mask.png'
 
     origin = load_image(origin_path)
-    mean_mask, not_mask = load_mask(mask_path, np.mean(origin))
+    mean_mask, not_mask = load_mask_pair(mask_path, 
+                                         np.mean(origin))
+
     h,w = origin.shape[:2]
     m_h, m_w = mean_mask.shape[:2]
     origin = origin[:,:,0].reshape((h,w,1)) # grayscale only!
