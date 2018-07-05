@@ -175,15 +175,14 @@ class Test_adjusted_image(unittest.TestCase):
         
 def scores(compl_model, origin, mean_mask, not_mask, answer):
     completed = completion(compl_model, origin, mean_mask, not_mask)
-    mask = np.logical_not(not_mask).astype(np.float32)
-    expected = answer * mask
-
     answer_uint8 = inverse_normalized(answer)
     max_err_img = cv2.bitwise_not(answer_uint8)
-    cv2.imshow('max error img',max_err_img); cv2.waitKey(0)
 
-    max_err_img = normalized(max_err_img) * mask
-    actual = completed * mask
+    mask = np.logical_not(not_mask).astype(np.float32)
+
+    masked_completed = completed * mask
+    masked_answer = answer * mask
+    masked_max_err_img = normalized(max_err_img) * mask
     #-------------------------------------------------------------
     #bgr_origin = cv2.cvtColor(origin,cv2.COLOR_RGB2BGR)
     cv2.imshow('origin',origin); cv2.waitKey(0)#-----------------
@@ -197,14 +196,16 @@ def scores(compl_model, origin, mean_mask, not_mask, answer):
     cv2.imshow('completed',completed); cv2.waitKey(0)#-----------
     #print(origin.shape); #print(mask.shape); #print('is it ok?')
     cv2.imshow('answer',answer); cv2.waitKey(0)
-    #cv2.imshow('expected',expected); cv2.waitKey(0)
-    #cv2.imshow('actual',actual); cv2.waitKey(0)
+    cv2.imshow('max error img',max_err_img); cv2.waitKey(0)
+    #cv2.imshow('masked_answer',masked_answer); cv2.waitKey(0)
+    #cv2.imshow('masked_completed',masked_completed); cv2.waitKey(0)
     #cv2.imshow('max error img',max_err_img); cv2.waitKey(0)
     #-------------------------------------------------------------
 
-    similarity = mse_ratio_similarity(actual, expected, max_err_img)
+    similarity = mse_ratio_similarity(masked_completed, masked_answer, 
+                                      masked_max_err_img)
     error = 1 - similarity
-    masked_ssim = compare_ssim(expected[:,:,0],actual[:,:,0]) # inputs must be 2D array!
+    masked_ssim = compare_ssim(masked_answer[:,:,0],masked_completed[:,:,0]) # inputs must be 2D array!
     full_ssim = compare_ssim(answer[:,:,0],completed[:,:,0]) # inputs must be 2D array!
     return similarity, error, masked_ssim, full_ssim
 
@@ -212,9 +213,6 @@ def scores(compl_model, origin, mean_mask, not_mask, answer):
 def main():
     # score: origin, mask, answer
     # completed_image: model, origin, mask
-    #-------------------------------------------------------------
-    origin_path = './eval-data/mini_evals/001_clean.png'
-    mask_path = './eval-data/mini_evals/008_mask.png'
     #-------------------------------------------------------------
     compl_model = load_compl_model('./old_complnets/complnet_5.h5',
     #compl_model = load_compl_model('./output/complnet_0.h5',
@@ -224,6 +222,8 @@ def main():
     #compl_model = load_compl_model('./old_complnets/192x_200e_complnet_190.h5',
                                    (None,None,1))
     #-------------------------------------------------------------
+    origin_path = './eval-data/mini_evals/001_clean.png'
+    mask_path = './eval-data/mini_evals/008_mask.png'
     origin = load_image(origin_path)
     mean_mask, not_mask = load_mask_pair(mask_path, np.mean(origin))
     answer = load_image(origin_path) # answer
