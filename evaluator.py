@@ -57,17 +57,11 @@ def load_mask_pair(imgpath, origin_mean_pixel_value,
     85729547328492|              |11111111111111
     '''
     mask = load_image(imgpath)
-
-    mask = (mask[:,:,mask_channel] > threshold).astype(np.uint8)#.astype(np.float32)
-    #cv2.imshow('mask',mask.astype(np.float32)); cv2.waitKey(0)
+    mask = (mask[:,:,mask_channel] > threshold).astype(np.uint8)
     mask = cv2.dilate(mask,kernel,iterations=1)
-    #cv2.imshow('mask',mask.astype(np.float32)); cv2.waitKey(0)
-    mask = mask.astype(np.float32)
-
-    mean_mask = mask * origin_mean_pixel_value # images 2
-    #cv2.imshow('mask',mask); cv2.waitKey(0)
-    #cv2.imshow('mean mask',mean_mask); cv2.waitKey(0)
-    return mean_mask, np.logical_not(mean_mask).astype(np.float32)
+    mean_mask = mask.astype(np.float32) * origin_mean_pixel_value # images 2
+    not_mask = np.logical_not(mean_mask).astype(np.float32)
+    return mean_mask, not_mask
     
 def padding_removed(padded_img,no_pad_shape):
     pH,pW,_ = padded_img.shape
