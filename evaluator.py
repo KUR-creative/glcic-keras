@@ -173,7 +173,7 @@ class Test_adjusted_image(unittest.TestCase):
         self.assertNotEqual( np.sum(src), np.sum(adjusted) )
         self.assertEqual( adjusted.shape, shape )  
         
-def scores(compl_model, origin, mean_mask, not_mask, answer):
+def scores(compl_model, origin, mean_mask, not_mask, answer, debug=False):
     completed = completion(compl_model, origin, mean_mask, not_mask)
     answer_uint8 = inverse_normalized(answer)
     max_err_img = cv2.bitwise_not(answer_uint8)
@@ -190,12 +190,13 @@ def scores(compl_model, origin, mean_mask, not_mask, answer):
     masked_ssim = compare_ssim(masked_answer[:,:,0],masked_completed[:,:,0]) # inputs must be 2D array!
     full_ssim = compare_ssim(answer[:,:,0],completed[:,:,0]) # inputs must be 2D array!
     #-------------------------------------------------------------
-    cv2.imshow('origin',origin); cv2.waitKey(0)#-----------------
-    cv2.imshow('mean_mask',mean_mask); cv2.waitKey(0)
-    cv2.imshow('not_mask',not_mask); cv2.waitKey(0)
-    cv2.imshow('completed',completed); cv2.waitKey(0)#-----------
-    cv2.imshow('answer',answer); cv2.waitKey(0)
-    cv2.imshow('max error img',max_err_img); cv2.waitKey(0)
+    if debug:
+        cv2.imshow('origin',origin); cv2.waitKey(0)
+        cv2.imshow('mean_mask',mean_mask); cv2.waitKey(0)
+        cv2.imshow('not_mask',not_mask); cv2.waitKey(0)
+        cv2.imshow('completed',completed); cv2.waitKey(0)
+        cv2.imshow('answer',answer); cv2.waitKey(0)
+        cv2.imshow('max error img',max_err_img); cv2.waitKey(0)
     #-------------------------------------------------------------
     return similarity, error, masked_ssim, full_ssim
 
