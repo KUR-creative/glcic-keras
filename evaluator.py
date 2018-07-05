@@ -64,6 +64,7 @@ def load_mask_pair(imgpath, origin_mean_pixel_value,
     return mean_mask, not_mask
     
 def padding_removed(padded_img,no_pad_shape):
+    '''
     pH,pW,_ = padded_img.shape
     nH,nW,_ = no_pad_shape
     dH = pH - nH
@@ -71,6 +72,8 @@ def padding_removed(padded_img,no_pad_shape):
     # TODO: change this! it's temporary implementation!
     # TODO: 0~pH-dH is incorrect!
     return padded_img[0:pH-dH,0:pW-dW]
+    '''
+    return adjusted_image(padded_img, no_pad_shape)
 
 def completion(completion_model, origin, mean_mask, not_mask):
     h,w = origin.shape[:2]
