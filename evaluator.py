@@ -119,6 +119,13 @@ def adjusted_image(image, shape, pad_value=0): # tested on only grayscale image.
         #print('- x',image.shape)
     return image
 
+def mse_ratio_pair(actual_img, expected_img, max_err_img):
+    result_mse = mse(expected_img, actual_img)
+    max_mse = mse(expected_img, max_err_img)
+    similarity = (max_mse - result_mse) / max_mse
+    error = 1 - similarity
+    return similarity, error
+
 import unittest
 class Test_adjusted_image(unittest.TestCase):
     def assert_adjustment(self, src_shape, dst_shape, visual_check=False):
@@ -225,12 +232,21 @@ def main():
     #cv2.imshow('actual',actual); cv2.waitKey(0)
     #cv2.imshow('max error img',max_err_img); cv2.waitKey(0)
 
+    '''
     result_mse = mse(expected,actual)
     max_mse = mse(expected,max_err_img)
     print('mse =', result_mse)
     print('max mse =', max_mse)
     print('similarity = {:3f}%'.format((max_mse - result_mse) / max_mse * 100))
     print('error = {:3f}%'.format(100 - (max_mse - result_mse) / max_mse * 100) )
+    '''
+    sim, err= mse_ratio_pair(actual, expected, max_err_img)
+    print('masked mse ratio similarity = {:3f}'.format(sim))
+    print('masked mse ratio error = {:3f}'.format(err))
+
+    #fsim, ferr = mse_ratio_pair(completed, answer, max_err_img)
+    #print('full mse ratio similarity = {:3f}'.format(fsim))
+    #print('full mse ratio error = {:3f}'.format(ferr))
 
     from skimage.measure import compare_ssim
     masked_ssim = compare_ssim(expected[:,:,0],actual[:,:,0]) # inputs must be 2D array!
