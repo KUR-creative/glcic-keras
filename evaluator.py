@@ -4,7 +4,6 @@ imgpath = sys.argv[1]
 origin, hw = load_image(imgpath)
 mean_mask, not_mask = mask_from_user(hw, origin)
 '''
-from data_generator import gen_batch
 from layers import completion_net, discrimination_net
 from tester_ui import tester_ui
 import numpy as np
@@ -41,6 +40,7 @@ def load_image(imgpath):
     origin = cv2.imread(imgpath)
     origin = cv2.cvtColor(origin,cv2.COLOR_BGR2RGB)
     origin = normalized(origin)
+    #cv2.imshow('li',origin);cv2.waitKey(0)
     return origin
 
 def mask_from_user(mask_hw, origin):
@@ -239,11 +239,30 @@ def main():
     paths = list(utils.file_paths('./eval-data/mini_evals/'))
     mask_paths = list(filter(lambda s: 'mask' in s, paths))
     answer_paths = list(filter(lambda s: 'clean' in s, paths))
-    origin_paths = list(answer_paths)#list(filter(lambda s: not ('clean' in s or 'mask' in s), paths))
+    #origin_paths = list(answer_paths)#list(filter(lambda s: not ('clean' in s or 'mask' in s), paths))
+    #l = 26
+    #for op, mp, ap in zip(origin_paths,mask_paths,answer_paths):
+        #print(op[:l] == mp[:l] == ap[:l])
 
-    l = 26
-    for origin, mask, answer in zip(origin_paths,mask_paths,answer_paths):
-        print(origin[:l] == mask[:l] == answer[:l])
+    print(answer_paths); print(mask_paths);
+
+    answers = list(map(load_image, answer_paths))
+    mean_pixel_values = list(map(np.mean, answers))
+    mask_pairs = list(map(load_mask_pair,
+                          mask_paths, mean_pixel_values))
+    origins = list(answers)
+
+    '''
+    for origin, mn, answer in zip(origins,mask_pairs,answers):
+        mean_mask, not_mask = mn
+        #cv2.imshow('origin',origin)
+        cv2.imshow('mean mask',mean_mask)
+        cv2.imshow('not mask',not_mask)
+        cv2.imshow('answer',answer)
+        #print(np.equal(origin,answer))
+        cv2.waitKey(0)
+    '''
+
 
     '''
     #-------------------------------------------------------------
