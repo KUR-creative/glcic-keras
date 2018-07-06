@@ -13,6 +13,7 @@ from keras.layers import Input, Add, Multiply, merge
 from keras.models import Model
 from keras.utils import plot_model
 from skimage.measure import compare_ssim
+import utils
 
 def mse(A,B):
     return ((A-B)**2).mean()
@@ -211,7 +212,7 @@ def main():
     #compl_model = load_compl_model('./old_complnets/192x_200e_complnet_190.h5',
                                    (None,None,1))
     #-------------------------------------------------------------
-
+    
     #-------------------------------------------------------------
     origin_path = './eval-data/mini_evals/001_clean.png'
     mask_path = './eval-data/mini_evals/008_mask.png'
@@ -219,17 +220,17 @@ def main():
     mean_mask, not_mask = load_mask_pair(mask_path, np.mean(origin))
     answer = load_image(origin_path) # answer
     #-------------------------------------------------------------
-    # extra preprocess
+    # extra preprocesses
+    origin = utils.slice1channel(origin) # grayscale only!
     h,w = origin.shape[:2]
     m_h, m_w = mean_mask.shape[:2]
-    origin = origin[:,:,0].reshape((h,w,1)) # grayscale only!
     mean_mask = adjusted_image( mean_mask.reshape([m_h,m_w,1]), (h,w,1) )
     not_mask = adjusted_image( not_mask.reshape([m_h,m_w,1]), (h,w,1), 1.0 )
     #-------------------------------------------------------------
 
     #-------------------------------------------------------------
     similarity, error, masked_ssim, full_ssim\
-        = scores(compl_model, origin, mean_mask, not_mask, answer)
+        = scores(compl_model, origin, mean_mask, not_mask, answer, True)
     #-------------------------------------------------------------
     print('masked mse ratio similarity = {:3f}'.format(similarity))
     print('masked mse ratio error = {:3f}'.format(error))
