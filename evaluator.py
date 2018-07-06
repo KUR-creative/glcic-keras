@@ -15,6 +15,8 @@ from keras.utils import plot_model
 from skimage.measure import compare_ssim
 import utils
 
+import os
+
 def mse(A,B):
     return ((A-B)**2).mean()
 def normalized(uint8img):
@@ -201,8 +203,49 @@ def scores(compl_model, origin, mean_mask, not_mask, answer, debug=False):
     #-------------------------------------------------------------
     return similarity, error, masked_ssim, full_ssim
 
+'''
+def origin_mask_answer_paths(paths):
+    mask_paths,answer_paths,origin_paths = [],[],[]
+    for path in paths:
+        if 'mask' in path:
+            mask_paths.append(path)
+        elif 'clean' in path:
+            answer_paths.append(path)
+        else: 
+            origin_paths.append(path)
+    return mask_paths,answer_paths,origin_paths
+
+def split(pred, data):
+    yes, no = [], []
+    for d in data:
+        (yes if pred(d) else no).append(d)
+    return yes, no
+
+    t1 = utils.ElapsedTimer('procedural')
+    paths = utils.file_paths('./eval-data/test/')
+    mask_paths, answer_paths, origin_paths = origin_mask_answer_paths(paths)
+    #print(origin_paths); print(answer_paths); print(mask_paths);
+    t1.elapsed_time()
+
+    t1 = utils.ElapsedTimer('split')
+    paths = utils.file_paths('./eval-data/test/')
+    mask_paths, mixed = split(lambda s: 'mask' in s,paths)
+    answer_paths, origin_paths = split(lambda s: 'clean' in s,mixed)
+    #print(origin_paths); print(answer_paths); print(mask_paths);
+    t1.elapsed_time()
+'''
 
 def main():
+    paths = list(utils.file_paths('./eval-data/mini_evals/'))
+    mask_paths = list(filter(lambda s: 'mask' in s, paths))
+    answer_paths = list(filter(lambda s: 'clean' in s, paths))
+    origin_paths = list(answer_paths)#list(filter(lambda s: not ('clean' in s or 'mask' in s), paths))
+
+    l = 26
+    for origin, mask, answer in zip(origin_paths,mask_paths,answer_paths):
+        print(origin[:l] == mask[:l] == answer[:l])
+
+    '''
     #-------------------------------------------------------------
     compl_model = load_compl_model('./old_complnets/complnet_5.h5',
     #compl_model = load_compl_model('./output/complnet_0.h5',
@@ -237,6 +280,7 @@ def main():
     print('masked ssim = {}'.format(masked_ssim))
     print('full ssim = {}'.format(full_ssim))
     #-------------------------------------------------------------
+    '''
 
 if __name__ == '__main__':
     #unittest.main()
