@@ -264,17 +264,17 @@ def main():
     '''
 
 
-    '''
     #-------------------------------------------------------------
-    compl_model = load_compl_model('./old_complnets/complnet_5.h5',
+    #compl_model = load_compl_model('./old_complnets/complnet_5.h5',
     #compl_model = load_compl_model('./output/complnet_0.h5',
     #compl_model = load_compl_model('./old_complnets/complnet_499.h5',
     #compl_model = load_compl_model('./old_complnets/complnet_9000.h5',
     #compl_model = load_compl_model('./old_complnets/192x_200e_complnet_199.h5',
     #compl_model = load_compl_model('./old_complnets/192x_200e_complnet_190.h5',
-                                   (None,None,1))
+    #                               (None,None,1))
     #-------------------------------------------------------------
     
+    '''
     #-------------------------------------------------------------
     origin_path = './eval-data/mini_evals/001_clean.png'
     mask_path = './eval-data/mini_evals/008_mask.png'
@@ -282,10 +282,18 @@ def main():
     mean_mask, not_mask = load_mask_pair(mask_path, np.mean(origin))
     answer = load_image(origin_path) # answer
     #-------------------------------------------------------------
+    '''
+    for org in origins: print(org.shape)
+    origins = list(map(utils.slice1channel,origins))
+    for org in origins: print(org.shape)
+
+    h_w_list = list(map(lambda x:x.shape, origins))
+    mh_mw_list = list(map(lambda mn:mn[0].shape, mask_pairs))
+    for h_w,mh_mw in zip(h_w_list,mh_mw_list): print(h_w,mh_mw)
     # extra preprocesses
-    origin = utils.slice1channel(origin) # grayscale only!
-    h,w = origin.shape[:2]
-    m_h, m_w = mean_mask.shape[:2]
+    #origin = utils.slice1channel(origin) # grayscale only!
+    #h,w = origin.shape[:2]
+    #m_h, m_w = mean_mask.shape[:2]
     mean_mask = adjusted_image( mean_mask.reshape([m_h,m_w,1]), (h,w,1) )
     not_mask = adjusted_image( not_mask.reshape([m_h,m_w,1]), (h,w,1), 1.0 )
     #-------------------------------------------------------------
@@ -299,7 +307,6 @@ def main():
     print('masked ssim = {}'.format(masked_ssim))
     print('full ssim = {}'.format(full_ssim))
     #-------------------------------------------------------------
-    '''
 
 if __name__ == '__main__':
     #unittest.main()
