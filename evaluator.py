@@ -13,10 +13,12 @@ from keras.models import Model
 from keras.utils import plot_model
 from skimage.measure import compare_ssim
 
+from tqdm import tqdm
 from fp import pipe, cmap, flip, unzip
 import utils
 
 import os
+from itertools import product
 
 def mse(A,B):
     return ((A-B)**2).mean()
@@ -133,8 +135,10 @@ def adjusted_image(image, shape, pad_value=0): # tested on only grayscale image.
 def mse_ratio_similarity(actual_img, expected_img, max_err_img):
     result_mse = mse(expected_img, actual_img)
     max_mse = mse(expected_img, max_err_img)
-    similarity = (max_mse - result_mse) / max_mse
-    return similarity
+    if max_mse == 0:
+        return 1.0
+    else:
+        return (max_mse - result_mse) / max_mse
 
 import unittest
 class Test_adjusted_image(unittest.TestCase):
@@ -181,7 +185,7 @@ class Test_adjusted_image(unittest.TestCase):
 def scores(compl_model, origin, mean_mask, not_mask, answer, debug=False):
     completed = completion(compl_model, origin, mean_mask, not_mask)
     answer_uint8 = inverse_normalized(answer)
-    max_err_img = cv2.bitwise_not(answer_uint8)
+    max_err_img = np.bitwise_not(answer_uint8)
 
     mask = np.logical_not(not_mask).astype(np.float32)
 
@@ -196,11 +200,11 @@ def scores(compl_model, origin, mean_mask, not_mask, answer, debug=False):
     full_ssim = compare_ssim(answer[:,:,0],completed[:,:,0]) # inputs must be 2D array!
     #-------------------------------------------------------------
     if debug:
-        cv2.imshow('origin',origin); cv2.waitKey(0)
-        cv2.imshow('mean_mask',mean_mask); cv2.waitKey(0)
-        cv2.imshow('not_mask',not_mask); cv2.waitKey(0)
-        cv2.imshow('completed',completed); cv2.waitKey(0)
-        cv2.imshow('answer',answer); cv2.waitKey(0)
+        cv2.imshow('origin',origin); 
+        cv2.imshow('mean_mask',mean_mask); 
+        cv2.imshow('not_mask',not_mask); 
+        cv2.imshow('completed',completed); 
+        cv2.imshow('answer',answer); 
         cv2.imshow('max error img',max_err_img); cv2.waitKey(0)
     #-------------------------------------------------------------
     return similarity, error, masked_ssim, full_ssim
@@ -237,111 +241,68 @@ def split(pred, data):
     t1.elapsed_time()
 '''
 
+def path_tuples(answer_paths, mask_paths):
+    '''yield (origin, answer, mask)paths'''
+    for pair in product(answer_paths, mask_paths):
+        yield pair[0], pair[0], pair[1]
+
 def main():
-    paths = list(utils.file_paths('./eval-data/mini_evals/'))
-    mask_paths = filter(lambda s: 'mask' in s, paths)
-    answer_paths = filter(lambda s: 'clean' in s, paths)
-    #origin_paths = list(answer_paths)#list(filter(lambda s: not ('clean' in s or 'mask' in s), paths))
-
-    '''
-    for mp,ap in zip(mask_paths,answer_paths):
-        print(mp,ap,mp[:26] == ap[:26])
-    print(answer_paths); print(mask_paths);
-    '''
     #-------------------------------------------------------------
-    origins = pipe(cmap(load_image),
-                   cmap(utils.slice1channel),list)(answer_paths)
-    mean_pixel_values = map(np.mean, origins)
-    hwcs = map(lambda img: img.shape, origins)
-
-    '''
-    for origin, mean_pixel_value, hwc, in zip(origins,
-                                              mean_pixel_values,
-                                              hwcs):
-        cv2.imshow('origin',origin); 
-        print(mean_pixel_value, hwc)
-        cv2.waitKey(0)
-    '''
-    #f = lambda i: i.reshape(
-    #mean_pixel_values)
-    
-    mean_masks,not_masks = unzip(map(load_mask_pair, 
-                                     mask_paths,mean_pixel_values))
-    mean_masks = list(map(utils.hw2hwc, mean_masks))
-    not_masks = map(utils.hw2hwc, not_masks)
-
-    mask_hwcs = map(lambda img: img.shape, mean_masks)
-
-    for mm,nm,mask_hwc in zip(mean_masks, not_masks, mask_hwcs):
-        cv2.imshow('mm',mm)
-        cv2.imshow('nm',nm)
-        print(mm.shape, nm.shape, mask_hwc)
-        cv2.waitKey(0)
-    #adjusted_image(mask,
-    #mask_pairs = map(cmap(adjust),mask_pairs)
-    #-------------------------------------------------------------
-
-    '''
-    map(pipe(load_image,slice1channel), answer_paths)
-    mean_pixel_values = list(map(np.mean, answers))
-    mask_pairs = list(map(load_mask_pair,
-                          mask_paths, mean_pixel_values))
-    #origins = list(answers)
-
-    for origin, mn, answer in zip(origins,mask_pairs,answers):
-        mean_mask, not_mask = mn
-        #cv2.imshow('origin',origin)
-        cv2.imshow('mean mask',mean_mask)
-        cv2.imshow('not mask',not_mask)
-        cv2.imshow('answer',answer)
-        #print(np.equal(origin,answer))
-        cv2.waitKey(0)
-    '''
-
-
-    #-------------------------------------------------------------
-    #compl_model = load_compl_model('./old_complnets/complnet_5.h5',
+    compl_model = load_compl_model('./old_complnets/complnet_5.h5',
     #compl_model = load_compl_model('./output/complnet_0.h5',
     #compl_model = load_compl_model('./old_complnets/complnet_499.h5',
     #compl_model = load_compl_model('./old_complnets/complnet_9000.h5',
     #compl_model = load_compl_model('./old_complnets/192x_200e_complnet_199.h5',
     #compl_model = load_compl_model('./old_complnets/192x_200e_complnet_190.h5',
-    #                               (None,None,1))
+                                   (None,None,1))
     #-------------------------------------------------------------
-    
-    '''
-    #-------------------------------------------------------------
-    origin_path = './eval-data/mini_evals/001_clean.png'
-    mask_path = './eval-data/mini_evals/008_mask.png'
-    origin = load_image(origin_path)
-    mean_mask, not_mask = load_mask_pair(mask_path, np.mean(origin))
-    answer = load_image(origin_path) # answer
-    #-------------------------------------------------------------
-    for org in origins: print(org.shape)
-    origins = list(map(utils.slice1channel,origins))
-    for org in origins: print(org.shape)
+    paths = list(utils.file_paths('./eval-data/mini_evals/'))
+    mask_paths = list(filter(lambda s: 'mask' in s, paths))
+    answer_paths = list(filter(lambda s: 'clean' in s, paths))
 
-    h_w_list = list(map(lambda x:x.shape, origins))
-    mh_mw_list = list(map(lambda mn:mn[0].shape, mask_pairs))
-    for h_w,mh_mw in zip(h_w_list,mh_mw_list): print(h_w,mh_mw)
-    # extra preprocesses
-    #origin = utils.slice1channel(origin) # grayscale only!
-    #h,w = origin.shape[:2]
-    #m_h, m_w = mean_mask.shape[:2]
-    mean_mask = adjusted_image( mean_mask.reshape([m_h,m_w,1]), (h,w,1) )
-    not_mask = adjusted_image( not_mask.reshape([m_h,m_w,1]), (h,w,1), 1.0 )
-    #-------------------------------------------------------------
+    similarities, errors, masked_ssims, full_ssims = [],[],[],[]
+    for tup in tqdm(path_tuples(answer_paths, mask_paths),
+                    total=len(mask_paths)*len(answer_paths)):
+        origin_path, answer_path, mask_path = tup
 
-    #-------------------------------------------------------------
-    similarity, error, masked_ssim, full_ssim\
-        = scores(compl_model, origin, mean_mask, not_mask, answer, True)
-    #-------------------------------------------------------------
-    print('masked mse ratio similarity = {:3f}'.format(similarity))
-    print('masked mse ratio error = {:3f}'.format(error))
-    print('masked ssim = {}'.format(masked_ssim))
-    print('full ssim = {}'.format(full_ssim))
-    #-------------------------------------------------------------
-    '''
+        origin = utils.slice1channel(load_image(origin_path))
+        answer = np.copy(origin)
+
+        mean_pixel_value = np.mean(origin)
+        hwc = origin.shape
+
+        mean_mask, not_mask = load_mask_pair(mask_path, mean_pixel_value)
+        mean_mask = utils.hw2hwc(mean_mask)
+        not_mask = utils.hw2hwc(not_mask)
+
+        mean_mask = adjusted_image(mean_mask,hwc)
+        not_mask = adjusted_image(not_mask,hwc,1.0)
+
+        #print(origin.shape, mean_mask.shape, np.all(origin == answer))
+        #cv2.imshow('origin',origin)
+        #cv2.imshow('mean mask',mean_mask)
+        #cv2.imshow('not mask',not_mask)
+        #cv2.waitKey(0)
+
+        similarity, error, masked_ssim, full_ssim\
+            = scores(compl_model, 
+                     origin, mean_mask, not_mask, answer)#, True)
+        similarities.append(similarity)
+        errors.append(error)
+        masked_ssims.append(masked_ssim)
+        full_ssims.append(full_ssim)
+        #-------------------------------------------------------------
+        '''
+        print('masked mse ratio similarity = {:3f}'.format(similarity))
+        print('masked mse ratio error = {:3f}'.format(error))
+        print('masked ssim = {}'.format(masked_ssim))
+        print('full ssim = {}'.format(full_ssim))
+        print('-------')
+        '''
+    print(np.mean(similarities))
+    print(np.mean(errors))
+    print(np.mean(masked_ssims))
+    print(np.mean(full_ssims))
 
 if __name__ == '__main__':
     #unittest.main()
