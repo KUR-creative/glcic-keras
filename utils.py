@@ -67,10 +67,12 @@ def make_dstpath(srcpath, old_parent, new_ancestors):
     return str(pathlib.Path(new_ancestors) \
                       .joinpath(*p.parts[idx+1:]))
 
+def hw2hwc(image):
+    return image.reshape(image.shape[:2] + (1,))
+
 def slice1channel(gray_rgb_img, channel=0):
     ''' gray_rgb_img is r=g=b image. '''
-    grayscale_img = gray_rgb_img[:,:,channel]
-    return grayscale_img.reshape(gray_rgb_img.shape[:2] + (1,))
+    return hw2hwc(gray_rgb_img[:,:,channel])
 
 import unittest
 class Test_replace_part_of_path(unittest.TestCase):

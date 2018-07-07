@@ -12,6 +12,8 @@ from keras.layers import Input, Add, Multiply, merge
 from keras.models import Model
 from keras.utils import plot_model
 from skimage.measure import compare_ssim
+
+from fp import pipe, cmap, flip, unzip
 import utils
 
 import os
@@ -241,17 +243,51 @@ def main():
     answer_paths = filter(lambda s: 'clean' in s, paths)
     #origin_paths = list(answer_paths)#list(filter(lambda s: not ('clean' in s or 'mask' in s), paths))
 
+    '''
     for mp,ap in zip(mask_paths,answer_paths):
         print(mp,ap,mp[:26] == ap[:26])
     print(answer_paths); print(mask_paths);
+    '''
+    #-------------------------------------------------------------
+    origins = pipe(cmap(load_image),
+                   cmap(utils.slice1channel),list)(answer_paths)
+    mean_pixel_values = map(np.mean, origins)
+    hwcs = map(lambda img: img.shape, origins)
 
-    answers = list(map(load_image, answer_paths))
+    '''
+    for origin, mean_pixel_value, hwc, in zip(origins,
+                                              mean_pixel_values,
+                                              hwcs):
+        cv2.imshow('origin',origin); 
+        print(mean_pixel_value, hwc)
+        cv2.waitKey(0)
+    '''
+    #f = lambda i: i.reshape(
+    #mean_pixel_values)
+    
+    mean_masks,not_masks = unzip(map(load_mask_pair, 
+                                     mask_paths,mean_pixel_values))
+    mean_masks = list(map(utils.hw2hwc, mean_masks))
+    not_masks = map(utils.hw2hwc, not_masks)
+
+    mask_hwcs = map(lambda img: img.shape, mean_masks)
+
+    for mm,nm,mask_hwc in zip(mean_masks, not_masks, mask_hwcs):
+        cv2.imshow('mm',mm)
+        cv2.imshow('nm',nm)
+        print(mm.shape, nm.shape, mask_hwc)
+        cv2.waitKey(0)
+    #adjusted_image(mask,
+    #mask_pairs = map(cmap(adjust),mask_pairs)
+    #-------------------------------------------------------------
+
+    '''
+    map(pipe(load_image,slice1channel), answer_paths)
     mean_pixel_values = list(map(np.mean, answers))
     mask_pairs = list(map(load_mask_pair,
                           mask_paths, mean_pixel_values))
-    origins = list(answers)
+    #origins = list(answers)
 
-    '''
     for origin, mn, answer in zip(origins,mask_pairs,answers):
         mean_mask, not_mask = mn
         #cv2.imshow('origin',origin)
@@ -281,7 +317,6 @@ def main():
     mean_mask, not_mask = load_mask_pair(mask_path, np.mean(origin))
     answer = load_image(origin_path) # answer
     #-------------------------------------------------------------
-    '''
     for org in origins: print(org.shape)
     origins = list(map(utils.slice1channel,origins))
     for org in origins: print(org.shape)
@@ -306,6 +341,7 @@ def main():
     print('masked ssim = {}'.format(masked_ssim))
     print('full ssim = {}'.format(full_ssim))
     #-------------------------------------------------------------
+    '''
 
 if __name__ == '__main__':
     #unittest.main()
