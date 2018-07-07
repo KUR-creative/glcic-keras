@@ -237,13 +237,12 @@ def split(pred, data):
 
 def main():
     paths = list(utils.file_paths('./eval-data/mini_evals/'))
-    mask_paths = list(filter(lambda s: 'mask' in s, paths))
-    answer_paths = list(filter(lambda s: 'clean' in s, paths))
+    mask_paths = filter(lambda s: 'mask' in s, paths)
+    answer_paths = filter(lambda s: 'clean' in s, paths)
     #origin_paths = list(answer_paths)#list(filter(lambda s: not ('clean' in s or 'mask' in s), paths))
-    #l = 26
-    #for op, mp, ap in zip(origin_paths,mask_paths,answer_paths):
-        #print(op[:l] == mp[:l] == ap[:l])
 
+    for mp,ap in zip(mask_paths,answer_paths):
+        print(mp,ap,mp[:26] == ap[:26])
     print(answer_paths); print(mask_paths);
 
     answers = list(map(load_image, answer_paths))
