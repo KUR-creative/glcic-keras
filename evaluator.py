@@ -292,17 +292,12 @@ def main():
         masked_ssims.append(masked_ssim)
         full_ssims.append(full_ssim)
         #-------------------------------------------------------------
-        '''
-        print('masked mse ratio similarity = {:3f}'.format(similarity))
-        print('masked mse ratio error = {:3f}'.format(error))
-        print('masked ssim = {}'.format(masked_ssim))
-        print('full ssim = {}'.format(full_ssim))
-        print('-------')
-        '''
-    print(np.mean(similarities))
-    print(np.mean(errors))
-    print(np.mean(masked_ssims))
-    print(np.mean(full_ssims))
+    print('mse ratio similarity mean = {} ({:f}%)'.format(np.mean(similarities), 
+                                                       np.mean(similarities)*100))
+    print('mse ratio error mean = {} ({:f}%)'.format(np.mean(errors),
+                                                   np.mean(errors)*100))
+    print('masked ssim mean = {}'.format(np.mean(masked_ssims)))
+    print('full ssim mean = {}'.format(np.mean(full_ssims)))
 
 if __name__ == '__main__':
     #unittest.main()
