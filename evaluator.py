@@ -7,7 +7,7 @@ mean_mask, not_mask = mask_from_user(hw, origin)
 from layers import completion_net, discrimination_net
 from tester_ui import tester_ui
 import numpy as np
-import cv2
+import cv2, yaml
 from keras.layers import Input, Add, Multiply, merge
 from keras.models import Model
 from keras.utils import plot_model
@@ -248,7 +248,8 @@ def path_tuples(answer_paths, mask_paths):
 
 def main():
     #-------------------------------------------------------------
-    compl_model = load_compl_model('./old_complnets/complnet_5.h5',
+    complnet_path = 'old_complnets/complnet_5.h5'
+    compl_model = load_compl_model(complnet_path,
     #compl_model = load_compl_model('./output/complnet_0.h5',
     #compl_model = load_compl_model('./old_complnets/complnet_499.h5',
     #compl_model = load_compl_model('./old_complnets/complnet_9000.h5',
@@ -256,11 +257,12 @@ def main():
     #compl_model = load_compl_model('./old_complnets/192x_200e_complnet_190.h5',
                                    (None,None,1))
     #-------------------------------------------------------------
-    paths = list(utils.file_paths('./eval-data/mini_evals/'))
+    dataset_path = 'eval-data/mini_evals'
+    paths = list(utils.file_paths(dataset_path))[:10]
     mask_paths = list(filter(lambda s: 'mask' in s, paths))
     answer_paths = list(filter(lambda s: 'clean' in s, paths))
 
-    similarities, errors, masked_ssims, full_ssims = [],[],[],[]
+    test_infos, similarities, errors, masked_ssims, full_ssims = [],[],[],[],[]
     for tup in tqdm(path_tuples(answer_paths, mask_paths),
                     total=len(mask_paths)*len(answer_paths)):
         origin_path, answer_path, mask_path = tup
@@ -287,17 +289,48 @@ def main():
         similarity, error, masked_ssim, full_ssim\
             = scores(compl_model, 
                      origin, mean_mask, not_mask, answer)#, True)
-        similarities.append(similarity)
-        errors.append(error)
-        masked_ssims.append(masked_ssim)
-        full_ssims.append(full_ssim)
+        test_infos.append(tup)
+        similarities.append(np.asscalar(similarity))
+        errors.append(np.asscalar(error))
+        masked_ssims.append(np.asscalar(masked_ssim))
+        full_ssims.append(np.asscalar(full_ssim))
         #-------------------------------------------------------------
-    print('mse ratio similarity mean = {} ({:f}%)'.format(np.mean(similarities), 
-                                                       np.mean(similarities)*100))
-    print('mse ratio error mean = {} ({:f}%)'.format(np.mean(errors),
-                                                   np.mean(errors)*100))
-    print('masked ssim mean = {}'.format(np.mean(masked_ssims)))
-    print('full ssim mean = {}'.format(np.mean(full_ssims)))
+    '''
+    similarities = list(map(np.asscalar,similarities))
+    errors = list(map(np.asscalar,errors))
+    masked_ssims = list(map(np.asscalar,masked_ssims))
+    full_ssims = list(map(np.asscalar,full_ssims))
+    '''
+    result = {'name' : (complnet_path.replace(os.sep,'_') 
+                        + '+' + 
+                        dataset_path.replace(os.sep,'_')),
+              'cnet_path' : complnet_path,
+              'dataset_path' : dataset_path,
+
+              'mse ratio similarity mean' : sum(similarities) / len(similarities),
+              'mse ratio error mean' : sum(errors) / len(similarities),
+              'masked ssim mean' : sum(masked_ssims) / len(similarities),
+              'full ssim mean' : sum(full_ssims) / len(similarities),
+
+              'origin,answer,mask paths' : test_infos,
+              'similarities' : similarities,
+              'errors' : errors,
+              'masked_ssims' : masked_ssims,
+              'full_ssims' : full_ssims}
+
+    with open(result['name']+'.yml','w') as f:
+        f.write(yaml.dump(result))
+
+    print('result:{}.yml saved!'.format(result['name'])) 
+    print('mse ratio similarity mean = {} ({:f}%)'\
+            .format(result['mse ratio similarity mean'], 
+                    result['mse ratio similarity mean']*100))
+    print('mse ratio error mean = {} ({:f}%)'\
+            .format(result['mse ratio error mean'],
+                    result['mse ratio error mean']*100))
+    print('masked ssim mean = {}'.format(result['masked ssim mean']))
+    print('full ssim mean = {}'.format(result['full ssim mean']))
+
 
 if __name__ == '__main__':
     #unittest.main()
