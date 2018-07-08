@@ -168,6 +168,21 @@ def path_tuples(answer_paths, mask_paths):
     for pair in product(answer_paths, mask_paths):
         yield pair[0], pair[0], pair[1]
 
+def path_tup2img_tup(origin_path, answer_path, mask_path):
+    origin = utils.slice1channel(load_image(origin_path))
+    answer = np.copy(origin)
+
+    mean_pixel_value = np.mean(origin)
+    hwc = origin.shape
+
+    mean_mask, not_mask = load_mask_pair(mask_path, mean_pixel_value)
+    mean_mask = utils.hw2hwc(mean_mask)
+    not_mask = utils.hw2hwc(not_mask)
+
+    mean_mask = adjusted_image(mean_mask,hwc)
+    not_mask = adjusted_image(not_mask,hwc,1.0)
+    return origin, mean_mask, not_mask, answer
+
 def main():
     #-------------------------------------------------------------
     complnet_path = 'old_complnets/complnet_5.h5'
@@ -179,27 +194,11 @@ def main():
     answer_paths = list(filter(lambda s: 'clean' in s, paths))
 
     test_infos, similarities, errors, masked_ssims, full_ssims = [],[],[],[],[]
-    for tup in tqdm(path_tuples(answer_paths, mask_paths),
+    for path_tup in tqdm(path_tuples(answer_paths, mask_paths),
                     total=len(mask_paths)*len(answer_paths)):
-        origin_path, answer_path, mask_path = tup
-
-        origin = utils.slice1channel(load_image(origin_path))
-        answer = np.copy(origin)
-
-        mean_pixel_value = np.mean(origin)
-        hwc = origin.shape
-
-        mean_mask, not_mask = load_mask_pair(mask_path, mean_pixel_value)
-        mean_mask = utils.hw2hwc(mean_mask)
-        not_mask = utils.hw2hwc(not_mask)
-
-        mean_mask = adjusted_image(mean_mask,hwc)
-        not_mask = adjusted_image(not_mask,hwc,1.0)
-
         similarity, error, masked_ssim, full_ssim\
-            = scores(compl_model,  #!
-                     origin, mean_mask, not_mask, answer)#, True)
-        test_infos.append(tup)
+            = scores(compl_model, *path_tup2img_tup(*path_tup))
+        test_infos.append(path_tup)
         similarities.append(np.asscalar(similarity))
         errors.append(np.asscalar(error))
         masked_ssims.append(np.asscalar(masked_ssim))
