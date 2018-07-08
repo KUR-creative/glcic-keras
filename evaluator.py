@@ -1,18 +1,18 @@
-from layers import completion_net, discrimination_net
-from tester_ui import tester_ui
+import os, sys, cv2, yaml
 import numpy as np
-import cv2, yaml
+from tqdm import tqdm
+from itertools import product
+
 from keras.layers import Input, Add, Multiply, merge
 from keras.models import Model
 from keras.utils import plot_model
 from skimage.measure import compare_ssim
 
-from tqdm import tqdm
 from fp import pipe, cmap, flip, unzip
+from layers import completion_net, discrimination_net
+from tester_ui import tester_ui
 import utils
 
-import os
-from itertools import product
 
 utils.help_option(
 '''
