@@ -1,5 +1,3 @@
-'''
-'''
 from layers import completion_net, discrimination_net
 from tester_ui import tester_ui
 import numpy as np
@@ -15,6 +13,23 @@ import utils
 
 import os
 from itertools import product
+
+utils.help_option(
+'''
+evaluator: 
+  evaluate all complnets in 'complnet_dir' 
+  using (origin,answer,mask) in 'dataset_dir'.
+  
+  save mse ratio similarity/error, masked/full ssim as yml.
+  save mean of scores and list of all scores.
+
+[synopsis]
+python evaluator.py complnet_dir dataset_dir
+
+ex)
+python evaluator.py olds/192x_200e/ eval-data/mini_evals
+'''
+)
 
 def mse(A,B):
     return ((A-B)**2).mean()
@@ -288,4 +303,5 @@ def main(complnet_dir,dataset_dir):
         save_result(complnet_path, dataset_dir)
 
 if __name__ == '__main__':
-    main('olds/192x_200e/','eval-data/mini_evals')
+    main(sys.argv[1],sys.argv[2])
+    #main('olds/192x_200e/','eval-data/mini_evals')
