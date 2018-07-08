@@ -282,14 +282,10 @@ def human_sorted(iterable):
     alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
     return sorted(iterable, key = alphanum_key)
         
-def main():
-    complnet_paths = utils.file_paths('olds/192x_200e/')
-    print(human_sorted(list(complnet_paths)))
-    '''
-    save_result('old_complnets/complnet_5.h5',
-                'eval-data/mini_evals')
-    '''
+def main(complnet_dir,dataset_dir):
+    complnet_paths = utils.file_paths(complnet_dir)
+    for complnet_path in human_sorted(complnet_paths):
+        save_result(complnet_path, dataset_dir)
 
 if __name__ == '__main__':
-    #unittest.main()
-    main()
+    main('olds/192x_200e/','eval-data/mini_evals')
