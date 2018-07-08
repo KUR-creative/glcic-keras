@@ -183,12 +183,10 @@ def path_tup2img_tup(origin_path, answer_path, mask_path):
     not_mask = adjusted_image(not_mask,hwc,1.0)
     return origin, mean_mask, not_mask, answer
 
-def main():
+def save_result(complnet_path,dataset_path):
     #-------------------------------------------------------------
-    complnet_path = 'old_complnets/complnet_5.h5'
     compl_model = load_compl_model(complnet_path, (None,None,1))
     #-------------------------------------------------------------
-    dataset_path = 'eval-data/mini_evals'
     paths = list(utils.file_paths(dataset_path))[:10]
     mask_paths = list(filter(lambda s: 'mask' in s, paths))
     answer_paths = list(filter(lambda s: 'clean' in s, paths))
@@ -277,6 +275,9 @@ class Test_adjusted_image(unittest.TestCase):
         self.assertNotEqual( np.sum(src), np.sum(adjusted) )
         self.assertEqual( adjusted.shape, shape )  
         
+def main():
+    save_result('old_complnets/complnet_5.h5',
+                'eval-data/mini_evals')
 
 if __name__ == '__main__':
     #unittest.main()
