@@ -202,7 +202,7 @@ def save_result(complnet_path,dataset_path):
     #-------------------------------------------------------------
     compl_model = load_compl_model(complnet_path, (None,None,1))
     #-------------------------------------------------------------
-    paths = list(utils.file_paths(dataset_path))[:10]
+    paths = list(utils.file_paths(dataset_path))
     mask_paths = list(filter(lambda s: 'mask' in s, paths))
     answer_paths = list(filter(lambda s: 'clean' in s, paths))
 
