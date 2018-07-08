@@ -274,10 +274,21 @@ class Test_adjusted_image(unittest.TestCase):
         adjusted = adjusted_image(src,shape,1)
         self.assertNotEqual( np.sum(src), np.sum(adjusted) )
         self.assertEqual( adjusted.shape, shape )  
+
+import re
+def human_sorted(iterable):
+    ''' Sorts the given iterable in the way that is expected. '''
+    convert = lambda text: int(text) if text.isdigit() else text
+    alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
+    return sorted(iterable, key = alphanum_key)
         
 def main():
+    complnet_paths = utils.file_paths('olds/192x_200e/')
+    print(human_sorted(list(complnet_paths)))
+    '''
     save_result('old_complnets/complnet_5.h5',
                 'eval-data/mini_evals')
+    '''
 
 if __name__ == '__main__':
     #unittest.main()
