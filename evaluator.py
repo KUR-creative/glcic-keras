@@ -147,7 +147,7 @@ def mse_ratio_similarity(actual_img, expected_img, max_err_img):
     result_mse = mse(expected_img, actual_img)
     max_mse = mse(expected_img, max_err_img)
     if max_mse == 0:
-        return 1.0
+        return np.float_(1.0)
     else:
         return (max_mse - result_mse) / max_mse
 
