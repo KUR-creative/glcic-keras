@@ -222,15 +222,15 @@ def save_result(complnet_path,dataset_path):
     with open(result['name']+'.yml','w') as f:
         f.write(yaml.dump(result))
 
-    print('result:{}.yml saved!'.format(result['name'])) 
-    print('mse ratio similarity mean = {} ({:f}%)'\
+    print('{}'.format(result['name']),end='|') 
+    print('mse ratio similarity mean = {:f} ({:f}%)'\
             .format(result['mse ratio similarity mean'], 
-                    result['mse ratio similarity mean']*100))
-    print('mse ratio error mean = {} ({:f}%)'\
+                    result['mse ratio similarity mean']*100),end='|')
+    print('mse ratio error mean = {:f} ({:f}%)'\
             .format(result['mse ratio error mean'],
-                    result['mse ratio error mean']*100))
-    print('masked ssim mean = {}'.format(result['masked ssim mean']))
-    print('full ssim mean = {}'.format(result['full ssim mean']))
+                    result['mse ratio error mean']*100),end='|')
+    print('masked ssim mean = {:f}'.format(result['masked ssim mean']),end='|')
+    print('full ssim mean = {:f}'.format(result['full ssim mean']))
 
 
 import unittest
