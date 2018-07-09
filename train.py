@@ -2,7 +2,6 @@ from model import init_models, BATCH_SIZE, IMG_SHAPE, LD_CROP_SIZE, HOLE_MAX_LEN
 from data_generator import gen_batch
 from utils import ElapsedTimer
 
-from tqdm import tqdm
 import numpy as np
 import os, h5py
 
@@ -45,7 +44,6 @@ def save(Cmodel,Dmodel,batch, period,epoch,num_epoch, result_dir):
         )
 
 
-from tqdm import tqdm
 def train(DATASET_NAME, NUM_EPOCH,Tc,Td, 
           SAVE_INTERVAL, MAILING_ENABLED, learned_data_ratio,
           now_epoch=0, Cmodel=None, Dmodel=None, CDmodel=None):
@@ -69,7 +67,7 @@ def train(DATASET_NAME, NUM_EPOCH,Tc,Td,
 
     timer = ElapsedTimer('Total Training')
     #-------------------------------------------------------------------------------
-    for epoch in tqdm(range(now_epoch,NUM_EPOCH)):
+    for epoch in range(now_epoch,NUM_EPOCH):
         #epoch_timer = ElapsedTimer()
         #--------------------------------------------------------------------------
         for batch in gen_batch(data_arr, BATCH_SIZE, IMG_SHAPE, LD_CROP_SIZE,
