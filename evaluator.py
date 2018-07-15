@@ -24,10 +24,10 @@ evaluator:
   save mean of scores and list of all scores.
 
 [synopsis]
-python evaluator.py complnet_dir dataset_dir
+python evaluator.py complnet_dir dataset_dir img_dir
 
 ex)
-python evaluator.py olds/192x_200e/ eval-data/mini_evals
+python evaluator.py olds/192x_200e/ eval-data/mini_evals ./output/small30_1000results/
 '''
 )
 
@@ -151,8 +151,19 @@ def mse_ratio_similarity(actual_img, expected_img, max_err_img):
     else:
         return (max_mse - result_mse) / max_mse
 
+cnet_path = None
+index = 0
 def scores(compl_model, origin, mean_mask, not_mask, answer, debug=False):
     completed = completion(compl_model, origin, mean_mask, not_mask)
+
+    global cnet_path, index
+    #cv2.imshow('wtf', completed); cv2.waitKey(0)
+    p = os.path.join(sys.argv[3], # directory to save completed images. 
+                     (cnet_path + str(index)).replace(os.sep,'_')  + '.png')
+    #print(p,flush=True)
+    cv2.imwrite(p, inverse_normalized(completed)) 
+    index += 1
+
     answer_uint8 = inverse_normalized(answer)
     max_err_img = np.bitwise_not(answer_uint8)
 
@@ -201,14 +212,16 @@ def path_tup2img_tup(origin_path, answer_path, mask_path):
 def save_result(complnet_path,dataset_path):
     #-------------------------------------------------------------
     compl_model = load_compl_model(complnet_path, (None,None,1))
+    global cnet_path, index
+    cnet_path = complnet_path
+    index = 0
     #-------------------------------------------------------------
     paths = list(utils.file_paths(dataset_path))
     mask_paths = list(filter(lambda s: 'mask' in s, paths))
     answer_paths = list(filter(lambda s: 'clean' in s, paths))
 
     test_infos, similarities, errors, masked_ssims, full_ssims = [],[],[],[],[]
-    for path_tup in tqdm(path_tuples(answer_paths, mask_paths),
-                    total=len(mask_paths)*len(answer_paths)):
+    for path_tup in path_tuples(answer_paths, mask_paths):
         similarity, error, masked_ssim, full_ssim\
             = scores(compl_model, *path_tup2img_tup(*path_tup))
         test_infos.append(path_tup)
@@ -304,5 +317,8 @@ def main(complnet_dir,dataset_dir):
         save_result(complnet_path, dataset_dir)
 
 if __name__ == '__main__':
-    main(sys.argv[1],sys.argv[2])
+    if len(sys.argv) != 3+1:
+        print('[usage]\npython evaluator.py complnet_dir dataset_dir img_dir')
+    else:
+        main(sys.argv[1],sys.argv[2])
     #main('olds/192x_200e/','eval-data/mini_evals')
