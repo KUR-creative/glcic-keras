@@ -299,7 +299,8 @@ def human_sorted(iterable):
         
 def main(complnet_dir,dataset_dir):
     complnet_paths = utils.file_paths(complnet_dir)
-    for complnet_path in human_sorted(complnet_paths):
+    complnet_paths = list(reversed(human_sorted(complnet_paths)))
+    for complnet_path in tqdm(complnet_paths):
         save_result(complnet_path, dataset_dir)
 
 if __name__ == '__main__':
