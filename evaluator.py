@@ -1,4 +1,4 @@
-import os, sys, cv2, yaml
+import os, sys, secrets, cv2, yaml
 import numpy as np
 from tqdm import tqdm
 from itertools import product
@@ -191,8 +191,10 @@ def scores(compl_model, origin, mean_mask, not_mask, answer, debug=False):
 
 def path_tuples(answer_paths, mask_paths):
     '''yield (origin, answer, mask)paths'''
-    for pair in product(answer_paths, mask_paths):
-        yield pair[0], pair[0], pair[1]
+    #for pair in product(answer_paths, mask_paths):
+    for answer_paths in answer_paths:
+        yield answer_paths, answer_paths, secrets.choice(mask_paths)
+        #yield pair[0], pair[0], pair[1]
 
 def path_tup2img_tup(origin_path, answer_path, mask_path):
     origin = utils.slice1channel(load_image(origin_path))
@@ -258,7 +260,7 @@ def save_result(complnet_path,dataset_path):
             .format(result['mse ratio error mean'],
                     result['mse ratio error mean']*100),end='|')
     print('masked ssim mean = {:f}'.format(result['masked ssim mean']),end='|')
-    print('full ssim mean = {:f}'.format(result['full ssim mean']))
+    print('full ssim mean = {:f}'.format(result['full ssim mean']),flush=True)
 
 
 import unittest
@@ -312,13 +314,13 @@ def human_sorted(iterable):
         
 def main(complnet_dir,dataset_dir):
     complnet_paths = utils.file_paths(complnet_dir)
-    complnet_paths = list(reversed(human_sorted(complnet_paths)))
+    complnet_paths = list(human_sorted(complnet_paths))
     for complnet_path in tqdm(complnet_paths):
         save_result(complnet_path, dataset_dir)
 
 if __name__ == '__main__':
     if len(sys.argv) != 3+1:
-        print('[usage]\npython evaluator.py complnet_dir dataset_dir img_dir')
+        print(' [usage]\npython evaluator.py complnet_dir dataset_dir img_dir')
     else:
         main(sys.argv[1],sys.argv[2])
     #main('olds/192x_200e/','eval-data/mini_evals')
