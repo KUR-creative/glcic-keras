@@ -220,7 +220,9 @@ def save_result(complnet_path,dataset_path):
     #-------------------------------------------------------------
     paths = list(utils.file_paths(dataset_path))
     mask_paths = list(filter(lambda s: 'mask' in s, paths))
-    answer_paths = list(filter(lambda s: 'clean' in s, paths))
+    #answer_paths = list(filter(lambda s: 'clean' in s, paths))
+    answer_paths = list(filter(lambda s: not('mask' in s), paths))
+    #print(len(answer_paths),answer_paths,flush=True)
 
     test_infos, similarities, errors, masked_ssims, full_ssims = [],[],[],[],[]
     for path_tup in path_tuples(answer_paths, mask_paths):
@@ -315,6 +317,7 @@ def human_sorted(iterable):
 def main(complnet_dir,dataset_dir):
     complnet_paths = utils.file_paths(complnet_dir)
     complnet_paths = list(human_sorted(complnet_paths))
+    #complnet_paths = list(reversed(human_sorted(complnet_paths)))
     for complnet_path in tqdm(complnet_paths):
         save_result(complnet_path, dataset_dir)
 
