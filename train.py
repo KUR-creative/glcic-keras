@@ -60,7 +60,7 @@ def train(DATASET_NAME, NUM_EPOCH,Tc,Td,
     '''
     data_file = h5py.File(DATASET_NAME,'r') 
     #-------------------------------------------------------------------------------
-    data_arr = data_file['images'] # already preprocessed, float32.
+    data_arr = data_file['images'][:] # already preprocessed, float32.
     mean_pixel_value = data_file['mean_pixel_value'][()] # value is float
     learned_arr_len = int(data_arr.shape[0] * learned_data_ratio)
     learned_arr_len = learned_arr_len - (learned_arr_len % BATCH_SIZE)#never use remainders..
@@ -69,7 +69,7 @@ def train(DATASET_NAME, NUM_EPOCH,Tc,Td,
 
     timer = ElapsedTimer('Total Training')
     #-------------------------------------------------------------------------------
-    for epoch in tqdm(range(now_epoch,NUM_EPOCH)):
+    for epoch in range(now_epoch,NUM_EPOCH):
         #epoch_timer = ElapsedTimer()
         #--------------------------------------------------------------------------
         for batch in gen_batch(data_arr, BATCH_SIZE, IMG_SHAPE, LD_CROP_SIZE,
@@ -83,13 +83,13 @@ def train(DATASET_NAME, NUM_EPOCH,Tc,Td,
                     joint_loss,mse,gan = trainC_in(CDmodel, batch, epoch)
         #--------------------------------------------------------------------------
         if epoch < Tc:
-            print('epoch {}: [C mse loss: {}]'.format(epoch, mse_loss), flush=False)#, end='')
+            print('epoch {}: [C mse loss: {}]'.format(epoch, mse_loss), flush=True)#, end='')
         else:
             if epoch >= Tc + Td:
                 print('epoch {}: [joint loss: {} | mse loss: {}, gan loss: {}]'\
-                       .format(epoch, joint_loss, mse, gan), flush=False)#, end='')
+                       .format(epoch, joint_loss, mse, gan), flush=True)#, end='')
             else:
-                print('epoch {}: [D bce loss: {}]'.format(epoch, bce_d_loss), flush=False)#, end='')
+                print('epoch {}: [D bce loss: {}]'.format(epoch, bce_d_loss), flush=True)#, end='')
         #epoch_timer.elapsed_time()
         save(Cmodel,Dmodel,batch, SAVE_INTERVAL,epoch,NUM_EPOCH, 'output')
     #-------------------------------------------------------------------------------
