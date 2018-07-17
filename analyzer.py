@@ -7,6 +7,7 @@ from parse import parse
 #file_name = './mini_240e_log'
 file_name = sys.argv[1]
 
+
 epoch = 0
 with open(file_name) as f:
     for li in (line.rstrip('\n') for line in f):

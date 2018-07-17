@@ -111,7 +111,43 @@ def completion(completion_model, origin, mean_mask, not_mask):
     cnet_output = padding_removed(cnet_output,origin.shape)
 
     mask = np.logical_not(not_mask).astype(np.float32)
+    #cv2.imshow('before',cnet_output * mask + holed_origin)
+    #cv2.waitKey(0)
     return cnet_output * mask + holed_origin
+
+'''
+def completion(completion_model, origin, mean_mask, not_mask):
+    h,w = origin.shape[:2]
+    holed_origin = origin * not_mask
+
+    cnet_input = np.copy(holed_origin) + mean_mask
+    cnet_input = cnet_input[:,:,0].reshape((1,h,w,1))
+
+    cnet_output = completion_model.predict( [cnet_input] )
+    cnet_output = cnet_output.reshape(cnet_output.shape[1:])
+    cnet_output = padding_removed(cnet_output,origin.shape)
+
+    mask = np.logical_not(not_mask).astype(np.float32)
+    inpainted_origin = cv2.inpaint(holed_origin, np.logical_not(not_mask).astype(np.uint8), 
+                                   3, cv2.INPAINT_NS).reshape((h,w,1))
+    center = (w//2,h//2)
+    obj = inverse_normalized(cnet_output * mask)
+    img = inverse_normalized(inpainted_origin)
+    obj = cv2.cvtColor(obj,cv2.COLOR_GRAY2BGR)
+    img = cv2.cvtColor(img,cv2.COLOR_GRAY2BGR)
+    completed = cv2.seamlessClone(obj, img, inverse_normalized(mask), 
+                                  center, cv2.NORMAL_CLONE)
+    completed = cv2.cvtColor(completed, cv2.COLOR_BGR2GRAY)
+    cv2.imshow('m',mask)
+    cv2.imshow('nm',not_mask)
+    cv2.imshow('just inpaint',inpainted_origin)
+    cv2.imshow('p-blend: inpaint + cnet',completed)
+    blended = cv2.addWeighted(inpainted_origin,0.5, cnet_output*mask,0.5,0).reshape((h,w,1))
+    cv2.imshow('w-blend: inpaint + cnet',blended * mask + holed_origin)
+    cv2.imshow('just cnet',cnet_output * mask + holed_origin)
+    cv2.waitKey(0)
+    return cnet_output * mask + holed_origin
+'''
 
 def adjusted_image(image, shape, pad_value=0): # tested on only grayscale image.
     h,w,_ = image.shape

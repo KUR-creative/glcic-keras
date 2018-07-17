@@ -83,13 +83,13 @@ def train(DATASET_NAME, NUM_EPOCH,Tc,Td,
                     joint_loss,mse,gan = trainC_in(CDmodel, batch, epoch)
         #--------------------------------------------------------------------------
         if epoch < Tc:
-            print('epoch {}: [C mse loss: {}]'.format(epoch, mse_loss), flush=True)#, end='')
+            print('epoch {}: [C mse loss: {}]'.format(epoch, mse_loss), flush=False)#, end='')
         else:
             if epoch >= Tc + Td:
                 print('epoch {}: [joint loss: {} | mse loss: {}, gan loss: {}]'\
-                       .format(epoch, joint_loss, mse, gan), flush=True)#, end='')
+                       .format(epoch, joint_loss, mse, gan), flush=False)#, end='')
             else:
-                print('epoch {}: [D bce loss: {}]'.format(epoch, bce_d_loss), flush=True)#, end='')
+                print('epoch {}: [D bce loss: {}]'.format(epoch, bce_d_loss), flush=False)#, end='')
         #epoch_timer.elapsed_time()
         save(Cmodel,Dmodel,batch, SAVE_INTERVAL,epoch,NUM_EPOCH, 'output')
     #-------------------------------------------------------------------------------
