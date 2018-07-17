@@ -35,6 +35,7 @@ if __name__ == "__main__":
                          './output/result%d.png' % i,
                          bat_size,img_size,1)
         print(i)
+
     '''
     #unittest.main()
     batch_size = 32
